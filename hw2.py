@@ -25,7 +25,9 @@ letters = "abcdefghijklmnopqrstuvwxyz"  # letters to choose from randomly
 n_dict = rnd.randint(2, 10)   # number of dict to be generated
 dict_list = []                # initial list of dictionaries
 
-# generate list od n_dict dictionaries
+print('Source dictionaries:')
+
+# generate list of n_dict dictionaries
 # each new dictionary will be appended to dict_list
 
 for i in range(1, n_dict + 1):
@@ -43,19 +45,19 @@ for i in range(1, n_dict + 1):
 
         d[letter] = rnd.randint(0, 100) # add new element to dictionary
 
-    print(d)
+    print(f'#: {i}, {d}')
     dict_list.append(d)   # add generated dictionary to dict_list
 
-pp.pprint(dict_list)
+# pp.pprint(dict_list)
 
 # 2. get previously generated list of dicts and create one common dict
 # intermediate dictionary structure: { key: (max_value_for_key, index_of_dictionary_with_max_value, OneValueOnly) }
 
 union_dict = {}
 
-for i, d in enumerate(dict_list):
+for i, d in enumerate(dict_list):   # process previously generated dictionaries 
 
-    for k, v in d.items():
+    for k, v in d.items():  # iterate through dictionary
     
         if k not in union_dict:
             # new key, add it to dict as is, set flag 'OneValueOnly' to True
@@ -69,7 +71,7 @@ for i, d in enumerate(dict_list):
             union_dict[k] = (uv, ui, False)
 
 
-# transformation of intermidiate dictionary into (new dict) result one
+# transformation of intermediate dictionary into new result dictionary
 
 udict = {}
 for k, (v, i, OneValueOnly) in union_dict.items():  # unpack dict element into variables
@@ -80,4 +82,5 @@ for k, (v, i, OneValueOnly) in union_dict.items():  # unpack dict element into v
         udict[f'{k}_{i}'] = v
 
 # show result
-# pp.pprint(udict)
+print('Transformed dictionary as the result:')
+pp.pprint(udict)
