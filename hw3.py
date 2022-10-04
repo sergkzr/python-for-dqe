@@ -43,7 +43,7 @@ for i, c in enumerate(sl):
     # calculate whitespaces in the normalized string
     if c in ws:
         ws_count = ws_count + 1
-        print(f'index: {i}, ws_count: {ws_count}, symb:"{c}"')
+        # print(f'index: {i}, ws_count: {ws_count}, symb:"{c}"')
 
     # move input symbol to output string
     # change first letter in the first word of the sentence to upper case
@@ -98,7 +98,7 @@ print('Normalized string with new sentence added:')
 print(ss_plusnew)
 print()
 
-#
+
 # iz misspelling: --> is
 # find ' iz ' and change it to ' is '
 
