@@ -132,7 +132,7 @@ print(last_word_list)
 print()
 
 # construct new sentence from the list of last words
-# capitalize forst word in the sentence
+# capitalize first word in the sentence
 
 norm_plusnew = norm_string +  \
             '\n' +            \
