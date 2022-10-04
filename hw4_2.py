@@ -50,6 +50,7 @@ def generate_dicts(dict_list, n_dict, max_length_dict):
         # print(f'#: {i}, {d}')
         dict_list.append(d)   # add generated dictionary to dict_list
 
+
 generate_dicts(dict_list, n_dict, 10)
 
 print('Source dictionaries:')
@@ -61,32 +62,43 @@ pp.pprint(dict_list)
 
 union_dict = {}
 
-for i, d in enumerate(dict_list):   # process previously generated dictionaries 
+def prepare_intermediate_dict(source_dict_list, interm_dict):
 
-    for k, v in d.items():  # iterate through dictionary
-    
-        if k not in union_dict:
-            # new key, add it to dict as is, set flag 'OneValueOnly' to True
-            union_dict[k] = (v, i+1, True)
-        elif union_dict[k][0] < v:
-            # new value is bigger than current value: change key and value and set flag 'OneValueOnly' to False
-            union_dict[k] = (v, i+1, False)
+    for i, d in enumerate(dict_list):   # process previously generated dictionaries 
+
+        for k, v in d.items():  # iterate through dictionary
+        
+            if k not in interm_dict:
+                # new key, add it to dict as is, set flag 'OneValueOnly' to True
+                interm_dict[k] = (v, i+1, True)
+            elif interm_dict[k][0] < v:
+                # new value is bigger than current value: change key and value and set flag 'OneValueOnly' to False
+                interm_dict[k] = (v, i+1, False)
+            else:
+                # new value is less than current value: change flag 'OneValueOnly' to False
+                uv, ui, _ = union_dict[k]
+                interm_dict[k] = (uv, ui, False)
+
+
+prepare_intermediate_dict(dict_list, union_dict)
+
+
+# transformation of intermediate dictionary into result dictionary
+
+def result_dict(union_dict):
+
+    udict = {}
+    for k, (v, i, OneValueOnly) in union_dict.items():  # unpack dict element into variables
+        if OneValueOnly:
+            udict[k] = v 
         else:
-            # new value is less than current value: change flag 'OneValueOnly' to False
-            uv, ui, _ = union_dict[k]
-            union_dict[k] = (uv, ui, False)
+            # there are some values in different dictionaries, we use maximum and indicate index in the dictionary key
+            udict[f'{k}_{i}'] = v
+    
+    return udict
 
-
-# transformation of intermediate dictionary into new result dictionary
-
-udict = {}
-for k, (v, i, OneValueOnly) in union_dict.items():  # unpack dict element into variables
-    if OneValueOnly:
-        udict[k] = v 
-    else:
-        # there are some values in different dictionaries, we use maximum and indicate index in the dictionary key
-        udict[f'{k}_{i}'] = v
+ud = result_dict(union_dict)
 
 # show result
 print('Transformed dictionary as the result:')
-pp.pprint(udict)
+pp.pprint(ud)
