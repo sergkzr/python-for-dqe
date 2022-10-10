@@ -1,8 +1,7 @@
 # 1.News – text and city as input. Date is calculated during publishing.
-#
 # 2.Privat ad – text and expiration date as input. Day left is calculated during publishing.
-#
-# 3.Your unique one with unique publish rules: text and 
+# 3.Your unique one with unique publish rules
+# Each new record should be added to the end of file
 
 
 import datetime as dt
@@ -225,7 +224,6 @@ class Menu:
             self.objct = None 
             self.MENU = menu
         
-
     def __show(self):
 
        # clear screen
@@ -267,7 +265,7 @@ class Menu:
                     if res == 'Exit':
                         return 'Done'
                     elif res == 'Wait':
-                        _ = input('Press any key')
+                        _ = input('Press ENTER key')
                     else:
                         print(res)
                         sleep(2)
@@ -311,17 +309,21 @@ if __name__ == '__main__':
         with open(Constants.FILE_PATH, 'w') as file:
             pass
     
-    news0 = News_message("We are waiting for Pope's visit", 'Napoly')
-    print(news0.make_obj_string())
-
-    ad0 = Private_ad__message('Be ready to see new slippers in owr stories!', '2022-12-25')
-    print(ad0.make_obj_string())
+    # test runs by message object type
     
-    book0 = Book_message('PySpark and Big Data', 'ISBN: 23456123', '2010')
-    print(book0.make_obj_string())
+    # news0 = News_message("We are waiting for Pope's visit", 'Napoly')
+    # print(news0.make_obj_string())
 
-    menu = Menu(MENU, 'Main menu')
-    menu_res = menu.run()
+    # ad0 = Private_ad__message('Be ready to see new slippers in owr stories!', '2022-12-25')
+    # print(ad0.make_obj_string())
+    
+    # book0 = Book_message('PySpark and Big Data', 'ISBN: 23456123', '2010')
+    # print(book0.make_obj_string())
+
+    # run app - main menu
+    
+    # menu = Menu(MENU, 'Main menu')
+    menu_res = Menu(MENU, 'Main menu').run()
     
     print(menu_res)
 
