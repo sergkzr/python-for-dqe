@@ -21,18 +21,16 @@ class Messages:
         self.object_index_list = []
         self.n_objects = 0
         self.current_position = 0
-        self.pred_position = 0
         self.file_is_read = False
 
     def __make_object_index(self):
 
         if not self.file_is_read:
 
+            page_length = Constants.OBJECTS_PER_SCREEN
+
             lines_list = []
             object_index_list = []
-            n_objects = 0
-            object_index_list = []
-            lines_list = []
 
             with open(self.file_name, 'r') as file:
                 
@@ -42,50 +40,47 @@ class Messages:
                     lines_list.append(line)
                     if line.startswith('<----------'):
                         object_index_list.append(i) 
-                        n_objects += 1
 
-            self.n_objects = n_objects        
             self.lines_list = lines_list
+            self.n_objects = len(object_index_list)        
             self.object_index_list = object_index_list
-            self.current_position = 0
-            self.pred_position = 0
+
+            last_page_length = self.n_objects % page_length
+            
+            self.pages_num = self.n_objects // page_length + (1 if  last_page_length > 0 else 0)
+            self.last_page_length = page_length if last_page_length == 0 else last_page_length
+
+            self.current_page = 0
 
             self.file_is_read = True
 
-    def __show_page(self):
 
-        page_len = Constants.OBJECTS_PER_SCREEN
+    def __show_page(self, page_numb, page_objects):
 
-        if (self.current_position >= 0) and (self.current_position < self.n_objects):
-            from_ind = self.current_position
-        else:
-            from_ind = self.pred_position
-            self.current_position = self.pred_position
+        start_index = page_numb * Constants.OBJECTS_PER_SCREEN
+        end_index = start_index + page_objects
 
-        rest_len = self.n_objects - from_ind
-        if rest_len >= page_len:
-            to_ind = from_ind + page_len - 1
-        else:
-            to_ind = from_ind + rest_len - 1
-        
-        for obj_ind in self.object_index_list[from_ind:to_ind+1]:
-
+        for obj_ind in self.object_index_list[start_index : end_index]:
+            
             for line in self.lines_list[obj_ind:]:
 
                 print(line)
                 if line.strip() == '---------->': 
                     break
 
-        return self.current_position + to_ind - from_ind + 1
+        return None
 
     def show_first_page(self):
 
+        page_length_default = Constants.OBJECTS_PER_SCREEN
+
         self.__make_object_index()
 
-        self.current_position = 0
-        back = self.current_position
-        self.current_position = self.__show_page()
-        self.pred_position = back  
+        page = 0
+        page_objects = self.last_page_length if (page + 1) == self.pages_num  else page_length_default
+        self.__show_page(page, page_objects) 
+
+        self.current_page = page + 1
 
         return 'Wait'
     
@@ -93,31 +88,58 @@ class Messages:
         
         self.__make_object_index()
 
-        back = self.current_position
-        self.current_position = self.n_objects - Constants.OBJECTS_PER_SCREEN
-        self.current_position = self.__show_page()
-        self.pred_position = back
+        page = self.pages_num - 1
+        page_length = self.last_page_length 
 
+        self.__show_page(page, page_length)
+
+        self.current_page = page + 1
+        
         return 'Wait'
 
     def show_next_page(self):
        
         self.__make_object_index()
 
-        back = self.current_position
-        self.current_position = self.__show_page()
-        self.pred_position = back
+        page_length_default = Constants.OBJECTS_PER_SCREEN
+
+        if self.current_page > self.pages_num - 1 :     # after last page
+
+            self.current_page -= 1 
+            self.show_last_page()
+
+        else:
+            
+            page = self.current_page
+            page_objects = self.last_page_length if (page + 1) == self.pages_num  else page_length_default
+
+            self.__show_page(page, page_objects)
+
+            self.current_page += 1
 
         return 'Wait'
 
     def show_prev_page(self):
 
-        self.__make_object_index()
+        page_length_default = Constants.OBJECTS_PER_SCREEN
 
-        back = self.current_position
-        self.current_position -= Constants.OBJECTS_PER_SCREEN
-        self.current_position = self.__show_page()  
-        self.pred_position = back
+        if self.current_page <= 0 :     # after last page
+
+            self.current_page = 0 
+            self.show_first_page()
+
+        else:
+            
+            if self.current_page >= self.pages_num:
+                page = self.current_page - 2
+            else:
+                page = self.current_page - 1
+
+            page_objects = self.last_page_length if (page + 1) == self.pages_num  else page_length_default
+
+            self.__show_page(page, page_objects)
+
+            self.current_page = page
 
         return 'Wait'
 
