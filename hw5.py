@@ -10,8 +10,16 @@ from time import sleep
 
 
 class Constants:
+
     FILE_PATH = './data/feed_data'
     OBJECTS_PER_SCREEN = 3
+
+    INGEST_FILE_PATH_DEFAULT = './data/ingest'
+    INGEST_FILE_NAME_DEFAULT = 'ingest.txt'
+
+    ARCHIVE_FILE_PATH_DEFAULT = './data/archive'
+    ARCHIVE_ERRFILE_DEFAULT = 'ingest_err'
+    ARCHIVE_SUCCFILE_DEFAULT = 'ingest_succ'
 
 
 class Messages:
@@ -20,7 +28,8 @@ class Messages:
         self.lines_list = []
         self.object_index_list = []
         self.n_objects = 0
-        self.current_position = 0
+        self.last_page_lengh = 0
+        self.current_page = 0
         self.file_is_read = False
 
     def __make_object_index(self):
@@ -51,7 +60,6 @@ class Messages:
             self.last_page_length = page_length if last_page_length == 0 else last_page_length
 
             self.current_page = 0
-
             self.file_is_read = True
 
 
@@ -72,74 +80,76 @@ class Messages:
 
     def show_first_page(self):
 
-        page_length_default = Constants.OBJECTS_PER_SCREEN
-
         self.__make_object_index()
+
+        page_length_default = Constants.OBJECTS_PER_SCREEN
+        self.current_page = 0
 
         page = 0
         page_objects = self.last_page_length if (page + 1) == self.pages_num  else page_length_default
         self.__show_page(page, page_objects) 
 
-        self.current_page = page + 1
-
         return 'Wait'
     
     def show_last_page(self):
-        
-        self.__make_object_index()
 
+        self.__make_object_index()
+        
+        page_length_default = Constants.OBJECTS_PER_SCREEN
+        
         page = self.pages_num - 1
+        self.current_page = page
         page_length = self.last_page_length 
 
         self.__show_page(page, page_length)
 
-        self.current_page = page + 1
-        
         return 'Wait'
 
     def show_next_page(self):
        
         self.__make_object_index()
 
-        page_length_default = Constants.OBJECTS_PER_SCREEN
+        if self.current_page >= self.pages_num - 1 :     # last page and after 
 
-        if self.current_page > self.pages_num - 1 :     # after last page
-
-            self.current_page -= 1 
-            self.show_last_page()
+            self.show_last_page()   # show last shown page
 
         else:
-            
-            page = self.current_page
-            page_objects = self.last_page_length if (page + 1) == self.pages_num  else page_length_default
-
-            self.__show_page(page, page_objects)
 
             self.current_page += 1
+           
+            page_length_default = Constants.OBJECTS_PER_SCREEN
+            page = self.current_page
+            page_objects = self.last_page_length if page  == (self.pages_num - 1 )  else page_length_default
+
+            self.__show_page(page, page_objects)
 
         return 'Wait'
 
     def show_prev_page(self):
 
-        page_length_default = Constants.OBJECTS_PER_SCREEN
+        self.__make_object_index()
 
-        if self.current_page <= 0 :     # after last page
+        if self.current_page <= 0 :     # before first page or first page
 
             self.current_page = 0 
             self.show_first_page()
 
         else:
             
-            if self.current_page >= self.pages_num:
-                page = self.current_page - 2
-            else:
-                page = self.current_page - 1
+            # if self.current_page >= self.pages_num - 1:
+            #     page = self.current_page - 2
+            # else:
+            #     page = self.current_page - 1
 
-            page_objects = self.last_page_length if (page + 1) == self.pages_num  else page_length_default
+            self.current_page -= 1
+
+            page = self.current_page
+            page_length_default = Constants.OBJECTS_PER_SCREEN
+            page_objects = self.last_page_length if page == (self.pages_num - 1)  else page_length_default
 
             self.__show_page(page, page_objects)
 
-            self.current_page = page
+            # self.current_page = page
 
         return 'Wait'
 
@@ -148,11 +158,18 @@ class Message:
    
     def __init__(self, msg='NoMessage'):
         self.msg = msg
+        self.published = None
 
     def put_message(self):
 
+        self.published = dt.datetime.utcnow()
+       
+        obj_str = self.make_obj_string()
+        
         with open(Constants.FILE_PATH, 'a') as file:
-            file.write(self.make_obj_string())
+            file.write(obj_str)
+
+        return obj_str
 
     def show(self):
         print(self.make_obj_string())
@@ -162,19 +179,24 @@ class News_message(Message):
     def __init__(self, msg='NoMessage', city='NoCity'):
         super().__init__(msg)
         self.city = city
-
+        
     def make(self):
+        # input data check could be added
         self.msg = input('News message: ')
         self.city = input('City: ')
-        return self
+
+        obj_str = self.put_message()
+        print(obj_str)
+        
+        return 'Wait'
 
     def make_obj_string(self):
-        return f"""<----------
-News
-text: {self.msg}
-city: {self.city}
-----------> 
-"""
+        return (
+        f"<----------\n"
+        f"News, {self.published}\n"
+        f"text: {self.msg}\n"
+        f"city: {self.city}\n"
+        f"---------->\n")
 
 
 class Private_ad__message(Message):
@@ -198,18 +220,23 @@ class Private_ad__message(Message):
         return f'{exp_days}'
 
     def make(self):
+        # input data check could be added
         self.msg = input('New Private Ad: ')
         self.expiration_date = input('Expiration_date: ')
-        return self
+
+        obj_str = self.put_message()
+        print(obj_str)
+
+        return 'Wait'
 
     def make_obj_string(self):
-        return f"""<----------
-Private Ad
-text: {self.msg}
-city: {self.expiration_date}
-days left: {self.__expire_days()}
----------->
-"""
+        return (
+        f"<----------\n"
+        f"Private Ad, {self.published}\n"
+        f"text: {self.msg}\n"
+        f"city: {self.expiration_date}\n"
+        f"days left: {self.__expire_days()}\n"
+        f"---------->\n")
 
 
 class Book_message(Message):
@@ -220,19 +247,24 @@ class Book_message(Message):
         self.publish_year = publish_year
 
     def make(self):
+        # input data check could be added
         self.msg = input('New Book title: ')
         self.isbn = input('ISBN: ')    
         self.publish_year = input('Publish_year: ')   
-        return self 
+
+        obj_str = self.put_message()
+        print(obj_str)
+
+        return 'Wait'
 
     def make_obj_string(self):
-        return f"""<----------
-Book_anounce
-Title: {self.msg}
-ISBN: {self.isbn}
-publish_year: {self.publish_year}
-----------> 
-"""
+        return (
+        f"<----------\n"
+        f"Book_anounce, {self.published}\n"
+        f"Title: {self.msg}\n"
+        f"ISBN: {self.isbn}\n"
+        f"publish_year: {self.publish_year}\n"
+        f"---------->\n")
 
 class Menu:
     def __init__(self, menu, title):
@@ -292,15 +324,18 @@ class Menu:
                         print(res)
                         sleep(2)
 
-                elif self.objct is None:
+                else:
 
-                    res.show()
-                    res.put_message()
-                    print('Written.')
-                    sleep(2)
+                    pass 
+                
+                # elif self.objct is None:
+
+                #     res.show()
+                #     res.put_message()
+                #     print('Written.')
+                #     sleep(2)
 
 
-# obj := Messages(Constants.FILE_PATH)
 
 MENU_SHOW_ALL = {
     '__init__': ('init object', obj := Messages(Constants.FILE_PATH)),
@@ -331,20 +366,8 @@ if __name__ == '__main__':
         with open(Constants.FILE_PATH, 'w') as file:
             pass
     
-    # test runs by message object type
-    
-    # news0 = News_message("We are waiting for Pope's visit", 'Napoly')
-    # print(news0.make_obj_string())
-
-    # ad0 = Private_ad__message('Be ready to see new slippers in owr stories!', '2022-12-25')
-    # print(ad0.make_obj_string())
-    
-    # book0 = Book_message('PySpark and Big Data', 'ISBN: 23456123', '2010')
-    # print(book0.make_obj_string())
-
     # run app - main menu
     
-    # menu = Menu(MENU, 'Main menu')
     menu_res = Menu(MENU, 'Main menu').run()
     
     print(menu_res)
