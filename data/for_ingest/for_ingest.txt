@@ -6,23 +6,23 @@ City: Pula
 ***Private Ad
 Message: Private ad and Private
 Ad
-Expiration date: 2022-10-30
+Expiration Date: 2022-10-30
 ***Book
 Title: PySpark - to be or not to be
 ISBN: 1234567890
-Publish Year: 2020
+Publish Year: 2020F
 ***News
 Message: Waiting for the Pope;s withit, in 20 minutes
 City: Umag
 ***News
 Messsage: One two three
 City: 
-***Private AD
+***Private Ad
 Message:
 Expiration Date: 2000-00-12
 ***Book
 Title: PySpark - your turn
-ISBN: 
+ISBN: 123456789
 Publish Year: 2020
 PPP: Ogogo
 ***Something Unknown

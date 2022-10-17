@@ -2,8 +2,9 @@
 
 import datetime as dt
 import os
-from time import sleep
+# from time import sleep
 
+import utilities as U
 
 class Constants:
 
@@ -150,8 +151,8 @@ class Messages:
         return 'Wait'
 
 
+
 class Message:
-   
     def __init__(self, msg='NoMessage'):
         self.msg = msg
         self.published = None
@@ -173,6 +174,8 @@ class Message:
 
 class News_message(Message):
     def __init__(self, msg='NoMessage', city='NoCity'):
+        print('News:', f'{msg=} {city=}')
+        return
         super().__init__(msg)
         self.city = city
         
@@ -262,7 +265,23 @@ class Book_message(Message):
         f"publish_year: {self.publish_year}\n"
         f"---------->\n")
 
-class Messages_ingest:
+news_prop = {'Message': 2, 'City': 1}  # 'Property': 1 one line, 2 - multy line
+ad_prop =   {'Private Ad': 2, 'Expiration Date': 1}
+book_prop = {'Title': 2, 'Isbn': 1, 'Publish Year': 1}
+
+news_map = {'Message': 'msg', 'City': 'city'}  # Names to Parameters mapping
+ad_map =   {'Private Ad': 'ad', 'Expiration Date': 'expiration_date'}
+book_map = {'Title': 'book_name', 'Isbn': 'isbn', 'Publish Year': 'publish_year'}
+
+message_types = {'News':       news_prop,
+                 'Private Ad': ad_prop,
+                 'Book':       book_prop}
+messages_init = {'News':       News_message,
+                 'Private Ad': Private_ad_message,
+                 'Book':       Book_message}
+
+
+class Ingest:
     def __init__(self, ingest_file_path, output_file_path):
         self.ing_file_path = ingest_file_path
         self.out_file_path = output_file_path
@@ -280,127 +299,105 @@ class Messages_ingest:
         self.ing_file_path = new_path
         return new_path
     
-    def ingest_objects_from_text(self, delete=True):
+    def from_text(self, delete=True):
 
         # print(os.getcwd())
         # print(os.listdir('./data'))
         # print(os.listdir('./data/for_ingest'))
 
         with open(self.ing_file_path, 'r') as file:
-            lines = file.read().split('\n')
+            lines = file.readlines()
 
         obj_type = 'Unknown'
         obj_lines = []
         
         for i, line in enumerate(lines):
-              
             print(i, line)
                 
             if line.startswith('***') and len(line) > 3:
 
-                new_obj_type = line[3:]
+                # process object lines
 
-                obj_str = '\n'.join(obj_lines)
+                # if (obj_prop := message_types.get(obj_type, None)) is not None:
+
+                #     skipped = []
+                #     properties = get_prop(obj_type, obj_prop, obj_lines, skipped)
+
+                #     if (Objct := messages_init.get(obj_type, None)) is not None:  
+
+                #         # obj = Objct(**properties)
+                #         print(f'{obj_type=}, {**properties}') 
+                
                 if obj_type == 'News':
-                    # parse News
-                    print('---News:')
-                    print(obj_str)
-                elif obj_type =='Private Ad':
-                    # parse Private Ad
-                    print('---Private Ad:')
-                    print(obj_str)
-                elif obj_type == 'Book':
-                    # parse Book
-                    print('---Book:')
-                    print(obj_str)
-                elif obj_type =='Unknown':
-                    # parse bad object type
-                    print('---Unknown (no Object at start):')
-                    print(obj_str)
-                else:
-                    # parse bad object type
-                    print('---Neznamo sho:')
-                    print(obj_str)
 
+                    skipped = ''
+                    prop = U.get_obj_prop(obj_type, news_prop, obj_lines, skipped)
+                    params = {news_map[k]: v for k, v in prop.items()}
+                    news = News_message(**params)
+                    # news.put_message()
+
+                elif obj_type == 'Private Ad':
+
+                    skipped = ''
+                    prop = U.get_obj_prop(obj_type, ad_prop, obj_lines, skipped)
+                    params = {ad_map[k]: v for k, v in prop.items()}
+                    # ad = Private_ad_message(**params)
+                    # ad.put_message()
+                    
+                elif obj_type == 'Book':
+                    
+                    skipped = ''
+                    prop = U.get_obj_prop(obj_type, book_prop, obj_lines, skipped)
+                    params = {book_map[k]: v for k, v in prop.items()}
+                    # book = Book_message(**params)
+                    # book.put_message()
+
+                else:
+
+                    print('-----Skip:', obj_type, obj_lines)
+
+
+                # new object starts
+
+                obj_type = line[3:].strip().lower().title()
                 obj_lines = []
-                obj_type = new_obj_type
-                print(f'--->>{obj_type}')
                                         
             else: 
                 obj_lines.append(line)
 
         
-        obj_str = '\n'.join(obj_lines)
-        print(f'---last object of type: {obj_type}')
-        print(obj_str)
+        if obj_type == 'News':
+
+            skipped = ''
+            prop = U.get_obj_prop(obj_type, news_prop, obj_lines, skipped)
+            params = {news_map[k]: v for k, v in prop.items()}
+            news = News_message(**params)
+            # news.put_message()
+
+        elif obj_type == 'Private Ad':
+
+            skipped = ''
+            prop = U.get_obj_prop(obj_type, ad_prop, obj_lines, skipped)
+            params = {ad_map[k]: v for k, v in prop.items()}
+            ad = Private_ad_message(**params)
+            # ad.put_message()
+                    
+        elif obj_type == 'Book':
+                 
+            skipped = ''
+            prop = U.get_obj_prop(obj_type, book_prop, obj_lines, skipped)
+            params = {book_map[k]: v for k, v in prop.items()}
+            book = Book_message(**params)
+            # book.put_message()
+
+        else:
+
+            print('-----Skip:', obj_type, obj_lines)
+
 
         return 'Wait'
 
 
-
-class Menu:
-    def __init__(self, menu, title):
-        self.title = title
-        init_param = menu.get('__init__', None)
-        if init_param:
-            self.objct = init_param[1]
-            menu.pop('__init__')
-            self.MENU = menu
-        else:   
-            self.objct = None 
-            self.MENU = menu
-        
-    def __show(self):
-
-       # clear screen
-        _ = os.system('cls') if os.name == 'nt' else os.system('clear')
-    
-        # show title
-        print(f'{self.title:<20}')
-        print('Choose option:')
- 
-        # show menu 
-        for menu_point, (menu_message, _) in self.MENU.items():
-            print(f'\t{menu_point:2}: {menu_message}')
-
-        # prompt
-        print('> ', end='')
-
-    def run(self):
-        
-        while True:
-
-            self.__show()
-            
-            input_str = input()
-            if input_str == '':
-                pass
-
-            # menu_mf - Menu Message Function
-            elif ( menu_mf := self.MENU.get(input_str, None) ) is None:
-                
-                print('Not valid menu point. Please repeat.')
-                sleep(2)
-                                
-            else:
-
-                res = menu_mf[1]()
-
-                if type(res) is str:
-
-                    if res == 'Exit':
-                        return 'Done'
-                    elif res == 'Wait':
-                        _ = input('Press ENTER key')
-                    else:
-                        print(res)
-                        sleep(2)
-
-                else:
-
-                    pass 
-                
- 
 
 MENU_SHOW_ALL = {
     '__init__': ('init object', obj := Messages(Constants.FILE_PATH)),
@@ -414,9 +411,9 @@ MENU_SHOW_ALL = {
 
 MENU_INGEST = {
     '__init__': ('init object',    
-                 obj := Messages_ingest('/'.join([Constants.INGEST_FILE_PATH_DEFAULT, Constants.INGEST_FILE_NAME_DEFAULT]), Constants.FILE_PATH) ),
+                 obj := Ingest('/'.join([Constants.INGEST_FILE_PATH_DEFAULT, Constants.INGEST_FILE_NAME_DEFAULT]), Constants.FILE_PATH) ),
     '1': ('Choose file to read',   obj.change_source_file),
-    '2': ('Ingest from text file', obj.ingest_objects_from_text),
+    '2': ('Ingest from text file', obj.from_text),
     '3': ('Ingest from JSON',      lambda: 'Not developed yet'),
     '4': ('Ingest from XML',       lambda: 'Not developed yet'),
     '0': ('Exit', lambda: 'Exit')
@@ -427,8 +424,8 @@ MENU = {
     '1': ('Make News message',        News_message().make),
     '2': ('Make Private Add message', Private_ad_message().make),
     '3': ('Make_Book_message',        Book_message().make),
-    '4': ('Enter messages from file', Menu(MENU_INGEST, f'INGEST MENU --------------\nCurrent ingest file: {Constants.INGEST_FILE_PATH_DEFAULT}').run),
-    '5': ('Show all the messages',    Menu(MENU_SHOW_ALL, 'SHOW FILE MENU --------------').run),
+    '4': ('Enter messages from file', U.Menu(MENU_INGEST, f'INGEST MENU --------------\nCurrent ingest file: {Constants.INGEST_FILE_PATH_DEFAULT}').run),
+    '5': ('Show all the messages',    U.Menu(MENU_SHOW_ALL, 'SHOW FILE MENU --------------').run),
     '0': ('Exit programm', lambda: 'Exit')
 }
 
@@ -445,6 +442,6 @@ if __name__ == '__main__':
     
     # run app - main menu
     
-    menu_res = Menu(MENU, 'Main menu').run()
+    menu_res = U.Menu(MENU, 'Main menu').run()
     
     print(menu_res)
