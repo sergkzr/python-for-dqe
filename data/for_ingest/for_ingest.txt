@@ -1,0 +1,38 @@
+***News
+Message:  Any text of any length, one line or many lines
+and here is the example of such a Message. Multile text WITHOUT
+symbol ':'
+City: Pula
+***Private Ad
+Message: Private ad and Private
+Ad
+Expiration date: 2022-10-30
+***Book
+Title: PySpark - to be or not to be
+ISBN: 1234567890
+Publish Year: 2020
+***News
+Message: Waiting for the Pope;s withit, in 20 minutes
+City: Umag
+***News
+Messsage: One two three
+City: 
+***Private AD
+Message:
+Expiration Date: 2000-00-12
+***Book
+Title: PySpark - your turn
+ISBN: 
+Publish Year: 2020
+PPP: Ogogo
+***Something Unknown
+Title: h;hl;h;lkh;lkh;hkl
+Year: 2000
+****News
+Message: Wrong type (four * instead of 3)
+City: LLL
+**NewsMessage: abcdefg
+City: Washington
+***
+Name: Serhii
+Surname: Not known
