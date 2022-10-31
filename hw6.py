@@ -8,7 +8,7 @@ import utilities as U
 
 class Constants:
 
-    FILE_PATH = './data/feed_data'
+    FILE_PATH = './data/feed_data'   # like internal DB file path
     OBJECTS_PER_SCREEN = 3
 
     INGEST_FILE_PATH_DEFAULT = './data/for_ingest'
@@ -17,6 +17,16 @@ class Constants:
     ARCHIVE_FILE_PATH_DEFAULT = './data/archive'
     ARCHIVE_ERRFILE_DEFAULT = 'ingest_err'
     ARCHIVE_SUCCFILE_DEFAULT = 'ingest_succ'
+
+
+class Empty_object:
+    def __init__(self):
+        self.message = 'Empty object'
+
+    def show(self):
+        print(self.message)
+
+empty_object = Empty_object()
 
 
 class Messages:
@@ -133,11 +143,6 @@ class Messages:
 
         else:
             
-            # if self.current_page >= self.pages_num - 1:
-            #     page = self.current_page - 2
-            # else:
-            #     page = self.current_page - 1
-
             self.current_page -= 1
 
             page = self.current_page
@@ -146,8 +151,6 @@ class Messages:
 
             self.__show_page(page, page_objects)
 
-            # self.current_page = page
-
         return 'Wait'
 
 
@@ -155,7 +158,7 @@ class Messages:
 class Message:
     def __init__(self, msg='NoMessage'):
         self.msg = msg
-        self.published = None
+        self.published = '000-00-00'
 
     def put_message(self):
 
@@ -174,8 +177,6 @@ class Message:
 
 class News_message(Message):
     def __init__(self, msg='NoMessage', city='NoCity'):
-        print('News:', f'{msg=} {city=}')
-        return
         super().__init__(msg)
         self.city = city
         
@@ -193,9 +194,9 @@ class News_message(Message):
         return (
         f"<----------\n"
         f"News, {self.published}\n"
-        f"text: {self.msg}\n"
-        f"city: {self.city}\n"
-        f"---------->\n")
+        f"Text: {self.msg}\n"
+        f"City: {self.city}\n"
+        f"---------->")
 
 
 class Private_ad_message(Message):
@@ -212,8 +213,10 @@ class Private_ad_message(Message):
         y = int(sy)
         m = int(sm)
         d = int(sd)
-        exp_date = dt.date(y, m, d)
-
+        try:
+            exp_date = dt.date(y, m, d)
+        except:
+            exp_date = now_date
         exp_days = exp_date - now_date
 
         return f'{exp_days}'
@@ -232,10 +235,10 @@ class Private_ad_message(Message):
         return (
         f"<----------\n"
         f"Private Ad, {self.published}\n"
-        f"text: {self.msg}\n"
-        f"city: {self.expiration_date}\n"
-        f"days left: {self.__expire_days()}\n"
-        f"---------->\n")
+        f"Text: {self.msg}\n"
+        f"City: {self.expiration_date}\n"
+        f"Days Left: {self.__expire_days()}\n"
+        f"---------->")
 
 
 class Book_message(Message):
@@ -259,32 +262,52 @@ class Book_message(Message):
     def make_obj_string(self):
         return (
         f"<----------\n"
-        f"Book_anounce, {self.published}\n"
+        f"Book, {self.published}\n"
         f"Title: {self.msg}\n"
         f"ISBN: {self.isbn}\n"
-        f"publish_year: {self.publish_year}\n"
-        f"---------->\n")
+        f"Publish_Year: {self.publish_year}\n"
+        f"---------->")
 
-news_prop = {'Message': 2, 'City': 1}  # 'Property': 1 one line, 2 - multy line
-ad_prop =   {'Private Ad': 2, 'Expiration Date': 1}
-book_prop = {'Title': 2, 'Isbn': 1, 'Publish Year': 1}
 
-news_map = {'Message': 'msg', 'City': 'city'}  # Names to Parameters mapping
-ad_map =   {'Private Ad': 'ad', 'Expiration Date': 'expiration_date'}
-book_map = {'Title': 'book_name', 'Isbn': 'isbn', 'Publish Year': 'publish_year'}
+message_types = ['News', 'Private Ad', 'Book']
 
-message_types = {'News':       news_prop,
+news_prop = {'Message': 2,
+             'City': 1}  # 'Property': 1 one line, 2 - multy line
+ad_prop =   {'Message': 2, 
+             'Expiration Date': 1}
+book_prop = {'Title': 2, 
+            'Isbn': 1, 
+            'Publish Year': 1}
+
+news_map = {'Message': 'msg', 
+            'City': 'city'}  # Names to Parameters mapping
+ad_map =   {'Message': 'ad', 
+            'Expiration Date': 'expiration_date'}
+book_map = {'Title': 'book_name', 
+            'Isbn': 'isbn', 
+            'Publish Year': 'publish_year'}
+
+message_prop = {'News':       news_prop,
                  'Private Ad': ad_prop,
                  'Book':       book_prop}
+
 messages_init = {'News':       News_message,
                  'Private Ad': Private_ad_message,
                  'Book':       Book_message}
 
 
 class Ingest:
-    def __init__(self, ingest_file_path, output_file_path):
+    def __init__(self, 
+                 ingest_file_path, 
+                 output_file_path, 
+                 arch_path,
+                 hist_fname,
+                 err_fname):
         self.ing_file_path = ingest_file_path
         self.out_file_path = output_file_path
+        self.arch_file_path = arch_path
+        self.hist_file_name = hist_fname
+        self.err_file_name = err_fname
     
     def change_source_file(self):
         curr_path = self.ing_file_path
@@ -298,106 +321,50 @@ class Ingest:
                 break
         self.ing_file_path = new_path
         return new_path
-    
-    def from_text(self, delete=True):
 
-        # print(os.getcwd())
-        # print(os.listdir('./data'))
-        # print(os.listdir('./data/for_ingest'))
+    def __objects_from_text(self):
+        """
+        Result:
+         objects_lines_list : text to  lines, source linex except skipped lines
+         obj_index_list     : list with indexes of the first row of the object in objects_lines_list
+         skipped_lines_list : list of skipped lines in the source text  
+        """
+        return U.parse_objects_from_text(self.ing_file_path, message_types)
 
-        with open(self.ing_file_path, 'r') as file:
-            lines = file.readlines()
+    def __make_object(self, obj_type, obj_lines, obj_prop):
 
-        obj_type = 'Unknown'
-        obj_lines = []
+        if obj_type not in message_types:
+            return empty_object 
         
-        for i, line in enumerate(lines):
-            print(i, line)
-                
-            if line.startswith('***') and len(line) > 3:
-
-                # process object lines
-
-                # if (obj_prop := message_types.get(obj_type, None)) is not None:
-
-                #     skipped = []
-                #     properties = get_prop(obj_type, obj_prop, obj_lines, skipped)
-
-                #     if (Objct := messages_init.get(obj_type, None)) is not None:  
-
-                #         # obj = Objct(**properties)
-                #         print(f'{obj_type=}, {**properties}') 
-                
-                if obj_type == 'News':
-
-                    skipped = ''
-                    prop = U.get_obj_prop(obj_type, news_prop, obj_lines, skipped)
-                    params = {news_map[k]: v for k, v in prop.items()}
-                    news = News_message(**params)
-                    # news.put_message()
-
-                elif obj_type == 'Private Ad':
-
-                    skipped = ''
-                    prop = U.get_obj_prop(obj_type, ad_prop, obj_lines, skipped)
-                    params = {ad_map[k]: v for k, v in prop.items()}
-                    # ad = Private_ad_message(**params)
-                    # ad.put_message()
-                    
-                elif obj_type == 'Book':
-                    
-                    skipped = ''
-                    prop = U.get_obj_prop(obj_type, book_prop, obj_lines, skipped)
-                    params = {book_map[k]: v for k, v in prop.items()}
-                    # book = Book_message(**params)
-                    # book.put_message()
-
-                else:
-
-                    print('-----Skip:', obj_type, obj_lines)
-
-
-                # new object starts
-
-                obj_type = line[3:].strip().lower().title()
-                obj_lines = []
-                                        
-            else: 
-                obj_lines.append(line)
-
+        skipped = ''
         
         if obj_type == 'News':
 
-            skipped = ''
             prop = U.get_obj_prop(obj_type, news_prop, obj_lines, skipped)
             params = {news_map[k]: v for k, v in prop.items()}
-            news = News_message(**params)
-            # news.put_message()
-
+            obj = News_message(**params)
+            # obj.put_message()
+            obj_str = obj.make_obj_string()
+ 
         elif obj_type == 'Private Ad':
 
-            skipped = ''
             prop = U.get_obj_prop(obj_type, ad_prop, obj_lines, skipped)
             params = {ad_map[k]: v for k, v in prop.items()}
-            ad = Private_ad_message(**params)
-            # ad.put_message()
-                    
+            obj = Private_ad_message(**params)
+            # obj.put_message()
+            obj_str = obj.make_obj_string()
+            
         elif obj_type == 'Book':
-                 
-            skipped = ''
+                    
             prop = U.get_obj_prop(obj_type, book_prop, obj_lines, skipped)
             params = {book_map[k]: v for k, v in prop.items()}
-            book = Book_message(**params)
-            # book.put_message()
+            obj = Book_message(**params)
+            # obj.put_message()
+            obj_str = obj.make_obj_string()
+            
+        return obj
 
-        else:
-
-            print('-----Skip:', obj_type, obj_lines)
-
-
-        return 'Wait'
-
-
+  
 
 MENU_SHOW_ALL = {
     '__init__': ('init object', obj := Messages(Constants.FILE_PATH)),
@@ -411,7 +378,12 @@ MENU_SHOW_ALL = {
 
 MENU_INGEST = {
     '__init__': ('init object',    
-                 obj := Ingest('/'.join([Constants.INGEST_FILE_PATH_DEFAULT, Constants.INGEST_FILE_NAME_DEFAULT]), Constants.FILE_PATH) ),
+                 obj := Ingest(ingest_file_path='/'.join([Constants.INGEST_FILE_PATH_DEFAULT, Constants.INGEST_FILE_NAME_DEFAULT]), 
+                                output_file_path=Constants.FILE_PATH, 
+                                arch_path=Constants.ARCHIVE_FILE_PATH_DEFAULT,
+                                hist_fname=Constants.ARCHIVE_SUCCFILE_DEFAULT,
+                                err_fname=Constants.ARCHIVE_ERRFILE_DEFAULT)
+                ),
     '1': ('Choose file to read',   obj.change_source_file),
     '2': ('Ingest from text file', obj.from_text),
     '3': ('Ingest from JSON',      lambda: 'Not developed yet'),

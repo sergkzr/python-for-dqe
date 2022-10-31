@@ -1,3 +1,9 @@
+All you want here 
+    should be skipped
+*********
+WoW WoW : lhlhlhl;kh;length 
+
+
 ***News
 Message:  Any text of any length, one line or many lines
 and here is the example of such a Message. Multile text WITHOUT
@@ -8,6 +14,10 @@ Message: Private ad and Private
 Ad
 Expiration Date: 2022-10-30
 ***Book
+Title: PySpark - to be or not to be
+ISBN: 1234567890
+Publish Year: 2020F
+***BBook
 Title: PySpark - to be or not to be
 ISBN: 1234567890
 Publish Year: 2020F
