@@ -5,6 +5,7 @@ import os
 # from time import sleep
 
 import utilities as U
+import ingest_from_text as IT
 
 class Constants:
 
@@ -154,7 +155,6 @@ class Messages:
         return 'Wait'
 
 
-
 class Message:
     def __init__(self, msg='NoMessage'):
         self.msg = msg
@@ -171,8 +171,8 @@ class Message:
 
         return obj_str
 
-    def show(self):
-        print(self.make_obj_string())
+    def show(self, oneline=False):
+        print(self.make_obj_string(oneline))
        
 
 class News_message(Message):
@@ -190,13 +190,16 @@ class News_message(Message):
         
         return 'Wait'
 
-    def make_obj_string(self):
-        return (
-        f"<----------\n"
-        f"News, {self.published}\n"
-        f"Text: {self.msg}\n"
-        f"City: {self.city}\n"
-        f"---------->")
+    def make_obj_string(self, oneline=False):
+        if oneline:
+            return f'<News: {self.published}, City: {self.city}, Msg: {self.msg[:20]}>'
+        else:
+            return (
+            f"<----------\n"
+            f"News: {self.published}\n"
+            f"Text: {self.msg}\n"
+            f"City: {self.city}\n"
+            f"---------->")
 
 
 class Private_ad_message(Message):
@@ -231,14 +234,17 @@ class Private_ad_message(Message):
 
         return 'Wait'
 
-    def make_obj_string(self):
-        return (
-        f"<----------\n"
-        f"Private Ad, {self.published}\n"
-        f"Text: {self.msg}\n"
-        f"City: {self.expiration_date}\n"
-        f"Days Left: {self.__expire_days()}\n"
-        f"---------->")
+    def make_obj_string(self, oneline=False):
+        if oneline:
+            return f'<Private AD: {self.published}, Expiration Date: {self.expiration_date}, Days Left: {self.__expire_days()}, Txt: {self.msg[:20]}>'
+        else:
+            return (
+            f"<----------\n"
+            f"Private Ad, {self.published}\n"
+            f"Text: {self.msg}\n"
+            f"Expiration Date: {self.expiration_date}\n"
+            f"Days Left: {self.__expire_days()}\n"
+            f"---------->")
 
 
 class Book_message(Message):
@@ -259,42 +265,76 @@ class Book_message(Message):
 
         return 'Wait'
 
-    def make_obj_string(self):
-        return (
-        f"<----------\n"
-        f"Book, {self.published}\n"
-        f"Title: {self.msg}\n"
-        f"ISBN: {self.isbn}\n"
-        f"Publish_Year: {self.publish_year}\n"
-        f"---------->")
+    def make_obj_string(self, oneline=False):
+        if oneline:
+            return f'<Book: {self.published}, ISBN: {self.isbn}, Publish Year: {self.publish_year}, Title: {self.msg[:20]}>'
+        else:
+            return (
+            f"<----------\n"
+            f"Book, {self.published}\n"
+            f"Title: {self.msg}\n"
+            f"ISBN: {self.isbn}\n"
+            f"Publish_Year: {self.publish_year}\n"
+            f"---------->")
 
 
-message_types = ['News', 'Private Ad', 'Book']
+# ## MESSAGE OBJECTS METADATA ####################################
 
-news_prop = {'Message': 2,
-             'City': 1}  # 'Property': 1 one line, 2 - multy line
-ad_prop =   {'Message': 2, 
-             'Expiration Date': 1}
-book_prop = {'Title': 2, 
-            'Isbn': 1, 
-            'Publish Year': 1}
+message_types = {
+    'News': News_message, 
+    'Private Ad': Private_ad_message, 
+    'Book': Book_message
+}
 
-news_map = {'Message': 'msg', 
-            'City': 'city'}  # Names to Parameters mapping
-ad_map =   {'Message': 'ad', 
-            'Expiration Date': 'expiration_date'}
-book_map = {'Title': 'book_name', 
-            'Isbn': 'isbn', 
-            'Publish Year': 'publish_year'}
+# Ingest 'Property': 1 one line, 2 - multy line
 
-message_prop = {'News':       news_prop,
-                 'Private Ad': ad_prop,
-                 'Book':       book_prop}
+news_ingest_prop =  {
+    'Message': 2, 
+    'City': 1
+} 
+ad_ingest_prop =  {
+    'Message': 2, 
+    'Expiration Date': 1
+}
+book_ingest_prop = {
+    'Title': 2, 
+    'Isbn': 1, 
+    'Publish Year': 1
+}
 
-messages_init = {'News':       News_message,
-                 'Private Ad': Private_ad_message,
-                 'Book':       Book_message}
+message_ingest_prop = {
+    'News':       news_ingest_prop,
+    'Private Ad': ad_ingest_prop,
+    'Book':       book_ingest_prop
+}
 
+# map ingest property name to object property name
+
+news_ingest_to_objprop_map = {
+    'Message': 'msg', 
+    'City': 'city'
+}  
+ad_ingest_to_objprop_map = {
+    'Message': 'ad', 
+    'Expiration Date': 'expiration_date'
+}
+book_ingest_to_objprop_map = {
+    'Title': 'book_name', 
+    'Isbn': 'isbn', 
+    'Publish Year': 'publish_year'
+}
+
+message_ingest_to_objprop_map = {
+    'News':       news_ingest_to_objprop_map,
+    'Private Ad': ad_ingest_to_objprop_map,
+    'Book':       book_ingest_to_objprop_map
+}
+
+# messages_init = {'News':       News_message,
+#                  'Private Ad': Private_ad_message,
+#                  'Book':       Book_message}
+
+## ######################################################
 
 class Ingest:
     def __init__(self, 
@@ -307,7 +347,7 @@ class Ingest:
         self.out_file_path = output_file_path
         self.arch_file_path = arch_path
         self.hist_file_name = hist_fname
-        self.err_file_name = err_fname
+        self.hist_file_name = err_fname
     
     def change_source_file(self):
         curr_path = self.ing_file_path
@@ -322,47 +362,92 @@ class Ingest:
         self.ing_file_path = new_path
         return new_path
 
-    def __objects_from_text(self):
-        """
-        Result:
-         objects_lines_list : text to  lines, source linex except skipped lines
-         obj_index_list     : list with indexes of the first row of the object in objects_lines_list
-         skipped_lines_list : list of skipped lines in the source text  
-        """
-        return U.parse_objects_from_text(self.ing_file_path, message_types)
+    def from_text(self):
 
-    def __make_object(self, obj_type, obj_lines, obj_prop):
+        objects_lines, obj_index, obj_type, skipped_lines = IT.parse_objects_from_text(self.ing_file_path)
 
-        if obj_type not in message_types:
-            return empty_object 
+        objects_dict_list, skipped_lines_2 = IT.parse_objects_from_obj_lines(objects_lines, obj_index, obj_type)
+
+        allowed_dict_list, skipped_lines_3 = IT.allowed_obj_dicts_from_obj_dicts(objects_dict_list, message_types, message_ingest_prop)
+
+        objects_list, skipped_lines_4 = IT.parse_objects_from_dict_list(allowed_dict_list, message_types, message_ingest_to_objprop_map)
+
+        skipped = ''.join(skipped_lines + skipped_lines_2 + skipped_lines_3 + skipped_lines_4)
+
+        print(f'There are skipped lines in input text file:\n{skipped}')
+        print('Objects found:')
+        for i, obj in enumerate(objects_list):
+            print(f'{i:02}', sep='')
+            obj.show(oneline=True)
+
+        print('Ignore ingest or Save objects found?', sep='')
+        while True:
+            ans = input('I|S')
+            if ans == 'I':
+                return f'Ingest from file {self.ing_file_path} ignored'
+            elif ans == 'S':
+                break
+            else:
+                pass
+
+        # save all the 'valid objects
+        # copy ingest file to arch with processing date
+        # delete ingest file
+        # save skipped lines in err file with processing date
+        # save valid objects to arch file with processing date
+
+
+
+        print(f'Objects from file {self.ing_file_path} ingested')
+        print(f'Source file moved to archive: {self.arch_file_path} {self.ing_file_path}')
+        print(f'Skipped lines saved to: {self.arch_file_path} {self.hist_file_name}')
+        print(f'Ingested objects logged to file: {self.arch_file_path} {self.hist_file_name}')
         
-        skipped = ''
-        
-        if obj_type == 'News':
 
-            prop = U.get_obj_prop(obj_type, news_prop, obj_lines, skipped)
-            params = {news_map[k]: v for k, v in prop.items()}
-            obj = News_message(**params)
-            # obj.put_message()
-            obj_str = obj.make_obj_string()
+        return 'Wait'
+
+
+    # def __objects_from_text(self):
+    #     """
+    #     Result:
+    #      objects_lines_list : text to  lines, source linex except skipped lines
+    #      obj_index_list     : list with indexes of the first row of the object in objects_lines_list
+    #      skipped_lines_list : list of skipped lines in the source text  
+    #     """
+    #     return U.parse_objects_from_text(self.ing_file_path, message_types)
+
+    # def __make_object(self, obj_type, obj_lines, obj_prop):
+
+    #     if obj_type not in message_types:
+    #         return empty_object 
+        
+    #     skipped = ''
+        
+    #     if obj_type == 'News':
+
+    #         prop = U.get_obj_prop(obj_type, news_prop, obj_lines, skipped)
+    #         params = {news_map[k]: v for k, v in prop.items()}
+    #         obj = News_message(**params)
+    #         # obj.put_message()
+    #         obj_str = obj.make_obj_string()
  
-        elif obj_type == 'Private Ad':
+    #     elif obj_type == 'Private Ad':
 
-            prop = U.get_obj_prop(obj_type, ad_prop, obj_lines, skipped)
-            params = {ad_map[k]: v for k, v in prop.items()}
-            obj = Private_ad_message(**params)
-            # obj.put_message()
-            obj_str = obj.make_obj_string()
+    #         prop = U.get_obj_prop(obj_type, ad_prop, obj_lines, skipped)
+    #         params = {ad_map[k]: v for k, v in prop.items()}
+    #         obj = Private_ad_message(**params)
+    #         # obj.put_message()
+    #         obj_str = obj.make_obj_string()
             
-        elif obj_type == 'Book':
+    #     elif obj_type == 'Book':
                     
-            prop = U.get_obj_prop(obj_type, book_prop, obj_lines, skipped)
-            params = {book_map[k]: v for k, v in prop.items()}
-            obj = Book_message(**params)
-            # obj.put_message()
-            obj_str = obj.make_obj_string()
+    #         prop = U.get_obj_prop(obj_type, book_prop, obj_lines, skipped)
+    #         params = {book_map[k]: v for k, v in prop.items()}
+    #         obj = Book_message(**params)
+    #         # obj.put_message()
+    #         obj_str = obj.make_obj_string()
             
-        return obj
+    #     return obj
 
   
 
