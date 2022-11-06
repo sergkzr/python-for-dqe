@@ -28,6 +28,80 @@ def get_normalized_list(source_text, split_symbol):
 
     return '\n'.join(normalized_text)
 
+##
+## properties checks
+##
+##
+
+def check_date(date_str):
+
+    date_valid = True
+
+    # check date
+    try:
+        y, m, d = date_str.split('-')
+    except:
+        return False
+    
+    y = int(y)
+    m = int(m)
+    d = int(d)
+
+    if not ((y >= 1945) and (y <= 2030)):
+        date_valid = False
+    elif not ((m >= 1) and (m <= 12)):
+        date_valid = False
+    elif not ( (d >= 1) and (d <= (31 if m in [1, 3, 5, 7, 8, 10, 12] else (30 if m in [4, 6, 9, 11] else 29))) ):
+        date_valid = False
+
+    return date_valid
+
+
+def check_year(year_str):
+    
+    year_valid = True
+    
+    # check year
+    try:
+        y = int(year_str)
+    except:
+        return False
+
+    if not ((y >= 1900) and (y <= 2030)):
+        year_valid = False
+
+    return year_valid
+
+
+def check_message(message_str_list):
+    message_valid = True
+    # check message
+    return message_valid
+
+
+def check_ISBN(isbn, year=2008):
+
+    isbn_valid = True
+    isbn = str(isbn)
+
+    # check isbn
+    if not isbn.isdigit():
+        return False
+
+    # 13 digits after 2007
+    # 10 digits before year 2008
+    if year < 2008:
+        if len(isbn) != 10:
+            isbn_valid = False
+    else:
+        if len(isbn) != 13:
+            isbn_valid = False
+    
+    return isbn_valid
+
+##
+## MENU execution
+##
 
 class Menu:
     def __init__(self, menu, title):
@@ -93,14 +167,14 @@ def parse_objects_from_text(ing_file, message_types):
     Text file format:
 
     ***<ObjType1>
-    <Key1>: <value - 1 or some lines
+    <Key1>: <value - 1 or some lines>
     ...
-    <KeyN>: <valueN - 1 or some lines
+    <KeyN>: <valueN - 1 or some lines>
     ***<OBjType2>
-    <Key1>: <value - 1 or some lines
+    <Key1>: <value - 1 or some lines>
     ...
-    <KeyN>: <valueN - 1 or some lines
-    --<end-of-file>
+    <KeyN>: <valueN - 1 or some lines>
+    <end-of-file>
 
     Example:
 
@@ -109,8 +183,6 @@ def parse_objects_from_text(ing_file, message_types):
     have sentences (wich are ended by dot symbol '.'.
     one line or more than one line of text
     Date: 2013-10-12
-
-
 
     Result:
        objects_lines_list : text to  lines, source linex except skipped lines
@@ -175,7 +247,7 @@ def get_obj_prop(obj_type: str, obj_keys: dict, obj_lines: list, skipped: list) 
 Get object (type) properties -> dic with object properties
 
     obj_type  : like "News" | "Book"
-    obj_keys  : dict with the object (type) pproperties names
+    obj_keys  : dict with the object (type) properties names
     obj_lines : list of object lines (represantation)
     skipped   : in-out string with skipped lines (during parsing of object lines)
 """
@@ -207,7 +279,7 @@ Get object (type) properties -> dic with object properties
                 prop_dict |= {key: value}
                 key = 'Skipped'
 
-        elif key = 'Skipped':
+        elif key == 'Skipped':
             skipped.append(line)
         elif (key in obj_keys) and multy_line:
             value = '\n'.join([value, line])
