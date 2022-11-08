@@ -407,49 +407,6 @@ class Ingest:
         return 'Wait'
 
 
-    # def __objects_from_text(self):
-    #     """
-    #     Result:
-    #      objects_lines_list : text to  lines, source linex except skipped lines
-    #      obj_index_list     : list with indexes of the first row of the object in objects_lines_list
-    #      skipped_lines_list : list of skipped lines in the source text  
-    #     """
-    #     return U.parse_objects_from_text(self.ing_file_path, message_types)
-
-    # def __make_object(self, obj_type, obj_lines, obj_prop):
-
-    #     if obj_type not in message_types:
-    #         return empty_object 
-        
-    #     skipped = ''
-        
-    #     if obj_type == 'News':
-
-    #         prop = U.get_obj_prop(obj_type, news_prop, obj_lines, skipped)
-    #         params = {news_map[k]: v for k, v in prop.items()}
-    #         obj = News_message(**params)
-    #         # obj.put_message()
-    #         obj_str = obj.make_obj_string()
- 
-    #     elif obj_type == 'Private Ad':
-
-    #         prop = U.get_obj_prop(obj_type, ad_prop, obj_lines, skipped)
-    #         params = {ad_map[k]: v for k, v in prop.items()}
-    #         obj = Private_ad_message(**params)
-    #         # obj.put_message()
-    #         obj_str = obj.make_obj_string()
-            
-    #     elif obj_type == 'Book':
-                    
-    #         prop = U.get_obj_prop(obj_type, book_prop, obj_lines, skipped)
-    #         params = {book_map[k]: v for k, v in prop.items()}
-    #         obj = Book_message(**params)
-    #         # obj.put_message()
-    #         obj_str = obj.make_obj_string()
-            
-    #     return obj
-
-  
 
 MENU_SHOW_ALL = {
     '__init__': ('init object', obj := Messages(Constants.FILE_PATH)),
