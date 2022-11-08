@@ -10,14 +10,15 @@ import ingest_from_text as IT
 class Constants:
 
     FILE_PATH = './data/feed_data'   # like internal DB file path
+    FILE_STATS_WORDCOUNT = './data/stats_wordcount'
+    FILE_STATS_SYMBOLS = './data/stats_symbols'
+
     OBJECTS_PER_SCREEN = 3
 
     INGEST_FILE_PATH_DEFAULT = './data/for_ingest'
     INGEST_FILE_NAME_DEFAULT = 'for_ingest.txt'
 
     ARCHIVE_FILE_PATH_DEFAULT = './data/archive'
-    ARCHIVE_ERRFILE_DEFAULT = 'ingest_err'
-    ARCHIVE_SUCCFILE_DEFAULT = 'ingest_succ'
 
 
 class Empty_object:
@@ -192,7 +193,7 @@ class News_message(Message):
 
     def make_obj_string(self, oneline=False):
         if oneline:
-            return f'<News: {self.published}, City: {self.city}, Msg: {self.msg[:20]}>'
+            return f'<News: {self.published}, City: {self.city}, Msg: {self.msg[:20]}...>'
         else:
             return (
             f"<----------\n"
@@ -236,7 +237,7 @@ class Private_ad_message(Message):
 
     def make_obj_string(self, oneline=False):
         if oneline:
-            return f'<Private AD: {self.published}, Expiration Date: {self.expiration_date}, Days Left: {self.__expire_days()}, Txt: {self.msg[:20]}>'
+            return f'<Private AD: {self.published}, Expiration Date: {self.expiration_date}, Days Left: {self.__expire_days()}, Txt: {self.msg[:20]}...>'
         else:
             return (
             f"<----------\n"
@@ -267,7 +268,7 @@ class Book_message(Message):
 
     def make_obj_string(self, oneline=False):
         if oneline:
-            return f'<Book: {self.published}, ISBN: {self.isbn}, Publish Year: {self.publish_year}, Title: {self.msg[:20]}>'
+            return f'<Book: {self.published}, ISBN: {self.isbn}, Publish Year: {self.publish_year}, Title: {self.msg[:20]}...>'
         else:
             return (
             f"<----------\n"
@@ -339,15 +340,11 @@ message_ingest_to_objprop_map = {
 class Ingest:
     def __init__(self, 
                  ingest_file_path, 
-                 output_file_path, 
-                 arch_path,
-                 hist_fname,
-                 err_fname):
+                 output_file_path,
+                 arch_path):
         self.ing_file_path = ingest_file_path
         self.out_file_path = output_file_path
         self.arch_file_path = arch_path
-        self.hist_file_name = hist_fname
-        self.hist_file_name = err_fname
     
     def change_source_file(self):
         curr_path = self.ing_file_path
@@ -377,12 +374,12 @@ class Ingest:
         print(f'There are skipped lines in input text file:\n{skipped}')
         print('Objects found:')
         for i, obj in enumerate(objects_list):
-            print(f'{i:02}', sep='')
+            print(f'{i:02}', end='')
             obj.show(oneline=True)
 
         print('Ignore ingest or Save objects found?', sep='')
         while True:
-            ans = input('I|S')
+            ans = input('I|S>')
             if ans == 'I':
                 return f'Ingest from file {self.ing_file_path} ignored'
             elif ans == 'S':
@@ -390,22 +387,18 @@ class Ingest:
             else:
                 pass
 
-        # save all the 'valid objects
-        # copy ingest file to arch with processing date
-        # delete ingest file
-        # save skipped lines in err file with processing date
-        # save valid objects to arch file with processing date
+        res = IT.manage_files(self.ing_file_path, Constants.ARCHIVE_FILE_PATH_DEFAULT, objects_list, skipped)
 
-
-
-        print(f'Objects from file {self.ing_file_path} ingested')
-        print(f'Source file moved to archive: {self.arch_file_path} {self.ing_file_path}')
-        print(f'Skipped lines saved to: {self.arch_file_path} {self.hist_file_name}')
-        print(f'Ingested objects logged to file: {self.arch_file_path} {self.hist_file_name}')
-        
+        print(f'Objects from file {res[0]} ingested')
+        print(f'Source file moved to archive: {res[1]}')
+        print(f'Skipped lines saved to: {res[2]}')
+        print(f'Ingested objects logged to file: {res[3]}')   
 
         return 'Wait'
 
+def show_stats():
+    print(f'statistics will be here...')
+    return 'Wait'
 
 
 MENU_SHOW_ALL = {
@@ -422,9 +415,7 @@ MENU_INGEST = {
     '__init__': ('init object',    
                  obj := Ingest(ingest_file_path='/'.join([Constants.INGEST_FILE_PATH_DEFAULT, Constants.INGEST_FILE_NAME_DEFAULT]), 
                                 output_file_path=Constants.FILE_PATH, 
-                                arch_path=Constants.ARCHIVE_FILE_PATH_DEFAULT,
-                                hist_fname=Constants.ARCHIVE_SUCCFILE_DEFAULT,
-                                err_fname=Constants.ARCHIVE_ERRFILE_DEFAULT)
+                                arch_path=Constants.ARCHIVE_FILE_PATH_DEFAULT)
                 ),
     '1': ('Choose file to read',   obj.change_source_file),
     '2': ('Ingest from text file', obj.from_text),
@@ -440,6 +431,7 @@ MENU = {
     '3': ('Make_Book_message',        Book_message().make),
     '4': ('Enter messages from file', U.Menu(MENU_INGEST, f'INGEST MENU --------------\nCurrent ingest file: {Constants.INGEST_FILE_PATH_DEFAULT}').run),
     '5': ('Show all the messages',    U.Menu(MENU_SHOW_ALL, 'SHOW FILE MENU --------------').run),
+    '6': ( 'Show stats', show_stats),
     '0': ('Exit programm', lambda: 'Exit')
 }
 

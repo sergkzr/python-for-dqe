@@ -1,6 +1,7 @@
 
 import string as st
 import datetime as dt
+import os
 
 
 
@@ -296,6 +297,57 @@ def parse_objects_from_dict_list(objects_dict_list, message_types, message_inges
             skipped_lines.extend(skip_object(obj_type_val, object_dict)) 
 
     return objects_list, skipped_lines
+
+
+def manage_files(source_file_path, arch_path, obj_list, skipped):
+
+    dirname = os.path.dirname(source_file_path)
+    basename = os.path.basename(source_file_path)
+    name, ext = os.path.splitext(basename)
+    
+    dtnowstr = dt.datetime.now().strftime("%Y%m%d-%H-%M-%S")
+    
+    new_file_name = ''.join([name, '_arc', dtnowstr, ext])
+    new_file_path = os.path.join(arch_path, new_file_name)
+    
+    # copy source file to archive
+    
+    with open(source_file_path) as rfile:
+        text = rfile.read()
+
+    with open(new_file_path, 'w') as wfile:
+        wfile.write(text)
+
+    # save skipped lines to archive file
+
+    arch_err_file_name = ''.join([name, '_err', dtnowstr, ext])
+    arch_err_file_path = os.path.join(arch_path, arch_err_file_name)
+    
+    with open(arch_err_file_path, 'w') as skipped_file:
+        skipped_file.write(skipped)
+
+    # save objects to db
+
+    for ob in obj_list:
+        obj_str = ob.put_message()
+    
+    # save ingested objects to archive
+
+    arch_obj_file_name = ''.join([name, '_obj', dtnowstr, ext])
+    arch_obj_file_path = os.path.join(arch_path, arch_obj_file_name)
+    
+    with open(arch_obj_file_path, 'w') as obj_file:
+        for ob in obj_list:
+            obj_str = ob.make_obj_string() + '\n'
+            obj_file.write(obj_str)          
+
+    # delete source ingest file
+
+    os.remove(source_file_path)
+    
+
+    return source_file_path, new_file_path, arch_err_file_path, arch_obj_file_path
+
 
 
 
