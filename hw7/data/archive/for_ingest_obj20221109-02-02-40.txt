@@ -1,0 +1,31 @@
+<----------
+News: 2022-11-09 00:02:40.255292
+Text:   Any text of any length, one line or many lines
+and here is the example of such a Message. Multile text WITHOUT
+symbol 'vertical dots'
+City:  Pula
+---------->
+<----------
+Private Ad, 2022-11-09 00:02:40.255292
+Text:  Private ad and Private
+Ad
+Expiration Date:  2022-10-30
+Days Left: -10 days, 0:00:00
+---------->
+<----------
+Book, 2022-11-09 00:02:40.255969
+Title:  PySpark - to be or not to be
+ISBN:  1234567890
+Publish_Year:  2020F
+---------->
+<----------
+News: 2022-11-09 00:02:40.256188
+Text:  Waiting for the Pope's visit, in 20 minutes
+City:  Umag
+---------->
+<----------
+Private Ad, 2022-11-09 00:02:40.256188
+Text: 
+Expiration Date:  2000-00-12
+Days Left: 0:00:00
+---------->
