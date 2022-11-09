@@ -61,29 +61,45 @@ publish_year: 2017
 News, 2022-10-18 22:59:12.439739
 text: msg ddd ggggg skdkf
 city: Rome
-----------><----------
-News: 2022-11-08 23:28:05.610926
+---------->
+<----------
+News: 2022-11-08 23:59:48.113884
+Text: Ha ha ha
+City: Umag
+---------->
+<----------
+Private Ad, 2022-11-09 00:01:24.833564
+Text: New test private ad about nothing
+Expiration Date: 2022-12-12
+Days Left: 33 days, 0:00:00
+---------->
+<----------
+News: 2022-11-09 00:02:40.255292
 Text:   Any text of any length, one line or many lines
 and here is the example of such a Message. Multile text WITHOUT
 symbol 'vertical dots'
 City:  Pula
-----------><----------
-Private Ad, 2022-11-08 23:28:05.610926
+---------->
+<----------
+Private Ad, 2022-11-09 00:02:40.255292
 Text:  Private ad and Private
 Ad
 Expiration Date:  2022-10-30
 Days Left: -10 days, 0:00:00
-----------><----------
-Book, 2022-11-08 23:28:05.610926
+---------->
+<----------
+Book, 2022-11-09 00:02:40.255969
 Title:  PySpark - to be or not to be
 ISBN:  1234567890
 Publish_Year:  2020F
-----------><----------
-News: 2022-11-08 23:28:05.611921
+---------->
+<----------
+News: 2022-11-09 00:02:40.256188
 Text:  Waiting for the Pope's visit, in 20 minutes
 City:  Umag
-----------><----------
-Private Ad, 2022-11-08 23:28:05.612411
+---------->
+<----------
+Private Ad, 2022-11-09 00:02:40.256188
 Text: 
 Expiration Date:  2000-00-12
 Days Left: 0:00:00
