@@ -338,13 +338,13 @@ def manage_files(source_file_path, arch_path, obj_list, skipped):
     
     with open(arch_obj_file_path, 'w') as obj_file:
         for ob in obj_list:
-            obj_str = ob.make_obj_string() + '\n'
+            obj_str = ob.make_obj_string() 
             obj_file.write(obj_str)          
 
     # delete source ingest file
 
     os.remove(source_file_path)
-    
+
 
     return source_file_path, new_file_path, arch_err_file_path, arch_obj_file_path
 

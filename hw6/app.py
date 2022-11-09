@@ -200,7 +200,7 @@ class News_message(Message):
             f"News: {self.published}\n"
             f"Text: {self.msg}\n"
             f"City: {self.city}\n"
-            f"---------->")
+            f"---------->\n")
 
 
 class Private_ad_message(Message):
@@ -245,7 +245,7 @@ class Private_ad_message(Message):
             f"Text: {self.msg}\n"
             f"Expiration Date: {self.expiration_date}\n"
             f"Days Left: {self.__expire_days()}\n"
-            f"---------->")
+            f"---------->\n")
 
 
 class Book_message(Message):
@@ -276,7 +276,7 @@ class Book_message(Message):
             f"Title: {self.msg}\n"
             f"ISBN: {self.isbn}\n"
             f"Publish_Year: {self.publish_year}\n"
-            f"---------->")
+            f"---------->\n")
 
 
 # ## MESSAGE OBJECTS METADATA ####################################
@@ -379,7 +379,7 @@ class Ingest:
 
         print('Ignore ingest or Save objects found?', sep='')
         while True:
-            ans = input('I|S>')
+            ans = input('I|S> ')
             if ans == 'I':
                 return f'Ingest from file {self.ing_file_path} ignored'
             elif ans == 'S':
