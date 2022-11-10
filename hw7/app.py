@@ -1,4 +1,4 @@
-# HW6: files and modules
+# HW7: files and modules
 
 import datetime as dt
 import os
