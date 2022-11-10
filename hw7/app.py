@@ -197,7 +197,7 @@ class News_message(Message):
         else:
             return (
             f"<----------\n"
-            f"News: {self.published}\n"
+            f"News, {self.published}\n"
             f"Text: {self.msg}\n"
             f"City: {self.city}\n"
             f"---------->\n")
