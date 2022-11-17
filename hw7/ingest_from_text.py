@@ -312,8 +312,11 @@ def manage_files(source_file_path, arch_path, obj_list, skipped):
     
     # copy source file to archive
     
-    with open(source_file_path) as rfile:
-        text = rfile.read()
+    try:
+        with open(source_file_path) as rfile:
+            text = rfile.read()
+    except:
+        return 'No file', '', '', ''
 
     with open(new_file_path, 'w') as wfile:
         wfile.write(text)

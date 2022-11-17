@@ -1,4 +1,4 @@
-# calculate sttatistics for feed_data db file:
+# calculate statistics for feed_data db file:
 # number of words and letters from previous Homeworks 5/6 output test file.
 # Two csv:
 # 1. word-count (all words are preprocessed in lowercase)
@@ -7,6 +7,7 @@
 # 
 
 import string as st
+import csv
 
 WS = st.whitespace
 LTall = st.ascii_letters
@@ -59,7 +60,7 @@ def word_count(string):
     words = string.split()
 
     for word in words:
-        if (len(word) > 0) and word[-1] in '.,;?!':
+        if (len(word) > 0) and word[-1] in '.,;?!-+=^*':
             word = word[:-1]
         if word in counts:
             counts[word] += 1
@@ -72,7 +73,7 @@ def word_count(string):
 def letters_count(string):
 
     letters_ = { smb:0 for smb in LTlower}
-    letters = { smb:0 for smb in LTupper}
+    letters = { smb:0 for smb in LTlower}
     others = dict()
 
     percentage = dict()
@@ -90,7 +91,7 @@ def letters_count(string):
         if smb in LTall:
             letters_[smb.lower()] += 1        
             if smb in LTupper:
-                letters[smb] += 1
+                letters[smb.lower()] += 1
         else:
             if smb in others:
                 others[smb] += 1
@@ -100,18 +101,62 @@ def letters_count(string):
     return letters_, letters, others
 
 
-FILE_PATH = './data/feed_data'
+def write_stat_wordcount(word_count_dict, file_to_write, silent=True):
+
+    with open(file_to_write, 'w', newline='') as ftw:
+
+        writer = csv.writer(ftw, delimiter='-')
+
+        for word, count in word_count_dict.items():
+            if not silent:
+                print('csv-writer:', word, count)
+            writer.writerow([word, count])
+
+
+def write_stat_lettercount(lett_dict, lett_upper_dict, file_to_write, silent=True):
+
+    total_letters_count = 0
+    for _, v in lett_dict.items():
+        total_letters_count += v
+
+    with open(file_to_write, 'w', newline='') as ftw:
+
+        header = ('letter', 'letter_count', 'letter_upper_count', 'letter_percent')
+        writer = csv.DictWriter(ftw, fieldnames=header)
+
+        writer.writeheader()
+    
+        for symb in LTlower:
+        
+            # write row from dict
+            
+            if not silent:
+                print('dict-writer:', symb, lett_dict[symb], lett_upper_dict[symb], lett_dict[symb]/total_letters_count*100)
+
+            writer.writerow({'letter': symb, 
+                            'letter_count': lett_dict[symb], 
+                            'letter_upper_count': lett_upper_dict[symb], 
+                            'letter_percent': f'{lett_dict[symb]/total_letters_count*100:.3}'})
 
 
 
 if __name__ == '__main__':
-    
+
+    FILE_PATH = './data/feed_data'
+    FILE_STAT_LETTERS_PATH = './data/lettercount'
+    FILE_STAT_WORDS_PATH = './data/wordcount'
+
     txt = get_text_from_feed_data(FILE_PATH)
     
     word_count = word_count(txt.lower())
     print(word_count)
 
     d1, d2, d3 = letters_count(txt)
+
     print(d1)
     print(d2)
     print(d3)
+
+    write_stat_wordcount(word_count, FILE_STAT_WORDS_PATH)
+    
+    write_stat_lettercount(d1, d2, FILE_STAT_LETTERS_PATH)

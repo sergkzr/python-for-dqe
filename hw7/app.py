@@ -2,16 +2,18 @@
 
 import datetime as dt
 import os
+import csv
 # from time import sleep
 
 import utilities as U
 import ingest_from_text as IT
+import statistics_csv as ST
 
 class Constants:
 
     FILE_PATH = './data/feed_data'   # like internal DB file path
-    FILE_STATS_WORDCOUNT = './data/stats_wordcount'
-    FILE_STATS_SYMBOLS = './data/stats_symbols'
+    FILE_STATS_WORDCOUNT = './data/wordcount'
+    FILE_STATS_SYMBCOUNT = './data/lettercount'
 
     OBJECTS_PER_SCREEN = 3
 
@@ -169,6 +171,8 @@ class Message:
         
         with open(Constants.FILE_PATH, 'a') as file:
             file.write(obj_str)
+
+        make_stats()
 
         return obj_str
 
@@ -396,10 +400,55 @@ class Ingest:
 
         return 'Wait'
 
+#### statistics making - reading/showing
+
 def show_stats():
-    print(f'statistics will be here...')
+
+    fwords = Constants.FILE_STATS_WORDCOUNT
+    fletters = Constants.FILE_STATS_SYMBCOUNT
+
+    print(f'words statistics is here:')
+    try:
+        with open(fwords, 'r') as wfile:
+            wreader = csv.reader(wfile, delimiter='-')
+            for line in wreader:
+                print(line)
+    except:
+        print('No word stats file, sorry.')
+
+    print(f'letters statistics is here:')
+    try:
+        with open(fletters, 'r') as lfile:
+            lreader = csv.DictReader(lfile)
+            for row in lreader:
+                print(row)
+    except:
+        print('No letters stats file, sorry.')
+
     return 'Wait'
 
+
+def make_stats():
+
+    fdata = Constants.FILE_PATH
+    fwords = Constants.FILE_STATS_WORDCOUNT
+    fletters = Constants.FILE_STATS_SYMBCOUNT
+
+    txt = ST.get_text_from_feed_data(fdata)
+    
+    # make words statistics
+    word_count = ST.word_count(txt.lower())
+    # print(word_count)
+
+    # make letters statistics
+    d1, d2, d3 = ST.letters_count(txt)
+
+    # make statistics csv files
+    ST.write_stat_wordcount(word_count, fwords)   
+    ST.write_stat_lettercount(d1, d2, fletters)
+
+
+###  Menu definitions
 
 MENU_SHOW_ALL = {
     '__init__': ('init object', obj := Messages(Constants.FILE_PATH)),
@@ -431,7 +480,7 @@ MENU = {
     '3': ('Make_Book_message',        Book_message().make),
     '4': ('Enter messages from file', U.Menu(MENU_INGEST, f'INGEST MENU --------------\nCurrent ingest file: {Constants.INGEST_FILE_PATH_DEFAULT}').run),
     '5': ('Show all the messages',    U.Menu(MENU_SHOW_ALL, 'SHOW FILE MENU --------------').run),
-    '6': ( 'Show stats', show_stats),
+    '6': ('Show stats', show_stats),
     '0': ('Exit programm', lambda: 'Exit')
 }
 
