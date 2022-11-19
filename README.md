@@ -3,15 +3,16 @@
 ## How to start hw application
 
 - hw1-hw5: 
-cd to root directory of repository
-run 'python hwx.py' command, x in (1, 2, 3, 4, 5)
+    - cd to root directory of repository
+    - run 'python hwx.py' command, x in (1, 2, 3, 4, 5)
 - hw6-10:
-cd to hwx directory
-run 'python app.py' command, x in (6, 7, 8, 9, 10)
+    - cd to hwx directory
+    - run 'python app.py' command, x in (6, 7, 8, 9, 10)
 
 
 ## Repository directory structure
-<!-- language: lang-none -->
+
+```
 hw1.py
 hw2.py
 hw3.py
@@ -50,5 +51,6 @@ hw8/
        feed_data
        lettercount
        wordcount
+```
 
        
