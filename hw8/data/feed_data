@@ -127,3 +127,36 @@ News, 2022-11-17 00:31:48.402504
 Text: We are proud to weclome president Trump in Italy
 City: Rome
 ---------->
+<----------
+News, 2022-11-19 16:10:31.600075
+Text: Месседж українською
+City: Львів
+---------->
+<----------
+News, 2022-11-19 20:36:39.954053
+Text: New Bus routes are opened starting from 10th November, to Ljubliana and Osijek
+City: Novi Grad
+---------->
+<----------
+Private Ad, 2022-11-19 20:36:39.966645
+Text: Very private ad - not for all, for allowed persons only
+Expiration Date: 2022-12-30
+Days Left: 41 days, 0:00:00
+---------->
+<----------
+Book, 2022-11-19 20:36:39.969573
+Title: New Big Data HandBook
+ISBN: 01928374650192
+Publish_Year: 2021
+---------->
+<----------
+Book, 2022-11-19 20:36:39.970633
+Title: Right Title
+ISBN: 12345678901234
+Publish_Year: 2022
+---------->
+<----------
+News, 2022-11-19 21:03:32.412615
+Text: Statistics updated  to take into account cyrilic letters, ukrainian and russian, like іиыїъ
+City: Пула/Пола
+---------->

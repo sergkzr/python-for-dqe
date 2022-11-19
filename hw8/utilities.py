@@ -194,7 +194,7 @@ def parse_objects_from_text(ing_file, message_types):
 
     try:
 
-        with open(ing_file, 'r') as file:
+        with open(ing_file, 'r', encoding='UTF-8') as file:
             lines = file.readlines()
         
         if not lines:

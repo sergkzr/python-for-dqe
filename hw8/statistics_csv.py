@@ -10,14 +10,19 @@ import string as st
 import csv
 
 WS = st.whitespace
-LTall = st.ascii_letters
-LTlower = st.ascii_lowercase
-LTupper = st.ascii_uppercase
+# LTall = st.ascii_letters
+LTlower_lat = 'abcdefghijklmnopqrstuvwxyz'
+LTupper_lat = LTlower_lat.upper()
+LTlower_cyr = 'абвгґдеєжзиіїыклмнопрстуфхцчшщьъэюя'
+LTupper_cyr = LTlower_cyr.upper()
+LTall = ''.join([LTlower_lat, LTupper_lat, LTlower_cyr, LTupper_cyr])
+LTlower = ''.join([LTlower_lat, LTlower_cyr])
+LTupper = ''.join([LTupper_lat, LTupper_cyr])
 
 
 def get_text_from_feed_data(file_path):
 
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='UTF-8') as file:
         lines = file.readlines()
 
     # filter lines where we will seek for words
@@ -103,7 +108,7 @@ def letters_count(string):
 
 def write_stat_wordcount(word_count_dict, file_to_write, silent=True):
 
-    with open(file_to_write, 'w', newline='') as ftw:
+    with open(file_to_write, 'w', encoding='UTF-8', newline='') as ftw:
 
         writer = csv.writer(ftw, delimiter='-')
 
@@ -119,7 +124,7 @@ def write_stat_lettercount(lett_dict, lett_upper_dict, file_to_write, silent=Tru
     for _, v in lett_dict.items():
         total_letters_count += v
 
-    with open(file_to_write, 'w', newline='') as ftw:
+    with open(file_to_write, 'w', encoding='UTF-8', newline='') as ftw:
 
         header = ('letter', 'letter_count', 'letter_upper_count', 'letter_percent')
         writer = csv.DictWriter(ftw, fieldnames=header)

@@ -6,7 +6,7 @@ import csv
 # from time import sleep
 
 import utilities as U
-import ingest_from_text as IT
+import ingest_utils as Ing
 import statistics_csv as ST
 
 class Constants:
@@ -18,8 +18,8 @@ class Constants:
     OBJECTS_PER_SCREEN = 3
 
     INGEST_FILE_PATH_DEFAULT = './data/for_ingest'
-    INGEST_FILE_NAME_DEFAULT = 'for_ingest.txt'
-
+    INGEST_FILE_NAME_DEFAULT = 'for_ingest'  ### plus extention: .txt|.json|.xml
+    
     ARCHIVE_FILE_PATH_DEFAULT = './data/archive'
 
 
@@ -52,7 +52,7 @@ class Messages:
             lines_list = []
             object_index_list = []
 
-            with open(self.file_name, 'r') as file:
+            with open(self.file_name, 'r', encoding='UTF-8') as file:
                 
                 lines = file.read().split('\n')
                 
@@ -161,7 +161,7 @@ class Messages:
 class Message:
     def __init__(self, msg='NoMessage'):
         self.msg = msg
-        self.published = '000-00-00'
+        self.published = '0000-00-00'
 
     def put_message(self):
 
@@ -169,7 +169,7 @@ class Message:
        
         obj_str = self.make_obj_string()
         
-        with open(Constants.FILE_PATH, 'a') as file:
+        with open(Constants.FILE_PATH, 'a', encoding='UTF-8') as file:
             file.write(obj_str)
 
         make_stats()
@@ -241,7 +241,7 @@ class Private_ad_message(Message):
 
     def make_obj_string(self, oneline=False):
         if oneline:
-            return f'<Private AD: {self.published}, Expiration Date: {self.expiration_date}, Days Left: {self.__expire_days()}, Txt: {self.msg[:20]}...>'
+            return f'<Private Ad: {self.published}, Expiration Date: {self.expiration_date}, Days Left: {self.__expire_days()}, Txt: {self.msg[:20]}...>'
         else:
             return (
             f"<----------\n"
@@ -342,61 +342,94 @@ message_ingest_to_objprop_map = {
 ## ######################################################
 
 class Ingest:
+
+    ing_txt = 'txt'
+    ing_json = 'json'
+    ing_xml = 'xml'
+
     def __init__(self, 
-                 ingest_file_path, 
+                 ingest_file_path,
+                 ingest_file_name, 
                  output_file_path,
                  arch_path):
+
         self.ing_file_path = ingest_file_path
+        self.ing_file_name = ingest_file_name
         self.out_file_path = output_file_path
         self.arch_file_path = arch_path
     
     def change_source_file(self):
-        curr_path = self.ing_file_path
-        print(f'Current ingest file path: {curr_path}')
-        while True:
-            new_path = input("New ingest file path: ")
-            if new_path == 'Exit': 
-                self.ing_file_path = curr_path
-                return curr_path
-            if os.path.isfile(new_path):
-                break
-        self.ing_file_path = new_path
-        return new_path
+        # change the NAME of ingest file in default ingest directory, 
+        # EXTENTION/TYPE will be added automatically by correspondent ingest method
+        curr_name = self.ing_file_name
+        print(f'Current ingest path: {self.ing_file_path}')
+        print(f'Current ingest file name: {self.ing_file_name}')
+        print('Possible extentions: .txt|.json|.xml|.dbconn')
 
+        while True:
+            new_name = input("New ingest file name (without extention, Exit to cancel): ")
+            if new_name == 'Exit': 
+                self.ing_file_name = curr_name
+                return f'File name was not changed; {curr_name}'
+            # check if any file with the name mentioned exists
+            file_list = os.listdir(self.ing_file_path)
+            for filedir in file_list:
+                print(f'filedir: {filedir} splitted:', sep='')
+                fn, ft = filedir.split('.')
+                if (fn == new_name) and ft in ('txt', 'json', 'xml', 'dbconn'):
+                    break
+            else:
+                print(f'No any file with new name and allowed extention in the directory {self.ing_file_path}')
+        self.ing_file_name = new_name
+        return f'New ingest file name: {new_name}'
+
+    
     def from_text(self):
 
-        objects_lines, obj_index, obj_type, skipped_lines = IT.parse_objects_from_text(self.ing_file_path)
+        text_file_path = os.path.join(self.ing_file_path, Constants.INGEST_FILE_NAME_DEFAULT+'.txt')
+        # check if file does exist
+        try:
+            with open(text_file_path, encoding='UTF-8') as file:
+                pass
+        except:
+            return f'File {text_file_path} does not exist.'
 
-        objects_dict_list, skipped_lines_2 = IT.parse_objects_from_obj_lines(objects_lines, obj_index, obj_type)
+        objects_lines, obj_index, obj_type, skipped_lines = Ing.parse_objects_from_text(text_file_path)
 
-        allowed_dict_list, skipped_lines_3 = IT.allowed_obj_dicts_from_obj_dicts(objects_dict_list, message_types, message_ingest_prop)
+        objects_dict_list, skipped_lines_2 = Ing.parse_objects_from_obj_lines(objects_lines, obj_index, obj_type)
 
-        objects_list, skipped_lines_4 = IT.parse_objects_from_dict_list(allowed_dict_list, message_types, message_ingest_to_objprop_map)
+        allowed_dict_list, skipped_lines_3 = Ing.allowed_obj_dicts_from_obj_dicts(objects_dict_list, message_types, message_ingest_prop)
+
+        objects_list, skipped_lines_4 = Ing.parse_objects_from_dict_list(allowed_dict_list, message_types, message_ingest_to_objprop_map)
 
         skipped = ''.join(skipped_lines + skipped_lines_2 + skipped_lines_3 + skipped_lines_4)
 
-        print(f'There are skipped lines in input text file:\n{skipped}')
-        print('Objects found:')
-        for i, obj in enumerate(objects_list):
-            print(f'{i:02}', end='')
-            obj.show(oneline=True)
+        Ing.manage_objects(objects_list, skipped, text_file_path, Constants.ARCHIVE_FILE_PATH_DEFAULT)
+        
+        return 'Wait'
 
-        print('Ignore ingest or Save objects found?', sep='')
-        while True:
-            ans = input('I|S> ')
-            if ans == 'I':
-                return f'Ingest from file {self.ing_file_path} ignored'
-            elif ans == 'S':
-                break
-            else:
+
+    def from_json(self):
+
+        json_file_path = os.path.join(self.ing_file_path, Constants.INGEST_FILE_NAME_DEFAULT+'.json')
+        # check if file does exist
+        try:
+            with open(json_file_path, encoding='UTF-8') as file:
                 pass
+        except:
+            return f'File {json_file_path} does not exist.'
+       
+        print(f'From file: {json_file_path}')
 
-        res = IT.manage_files(self.ing_file_path, Constants.ARCHIVE_FILE_PATH_DEFAULT, objects_list, skipped)
+        obj_dict_list, skipped_list = Ing.parse_obj_from_json(json_file_path)
 
-        print(f'Objects from file {res[0]} ingested')
-        print(f'Source file moved to archive: {res[1]}')
-        print(f'Skipped lines saved to: {res[2]}')
-        print(f'Ingested objects logged to file: {res[3]}')   
+        allowed_dict_list, skipped_lines_3 = Ing.allowed_obj_dicts_from_obj_dicts(obj_dict_list, message_types, message_ingest_prop)
+
+        objects_list, skipped_lines_4 = Ing.parse_objects_from_dict_list(allowed_dict_list, message_types, message_ingest_to_objprop_map)
+
+        skipped = ''.join(skipped_list + skipped_lines_3 + skipped_lines_4)
+
+        Ing.manage_objects(objects_list, skipped, json_file_path, Constants.ARCHIVE_FILE_PATH_DEFAULT)
 
         return 'Wait'
 
@@ -409,7 +442,7 @@ def show_stats():
 
     print(f'words statistics is here:')
     try:
-        with open(fwords, 'r') as wfile:
+        with open(fwords, 'r', encoding='UTF-8') as wfile:
             wreader = csv.reader(wfile, delimiter='-')
             for line in wreader:
                 print(line)
@@ -418,7 +451,7 @@ def show_stats():
 
     print(f'letters statistics is here:')
     try:
-        with open(fletters, 'r') as lfile:
+        with open(fletters, 'r', encoding='UTF-8') as lfile:
             lreader = csv.DictReader(lfile)
             for row in lreader:
                 print(row)
@@ -462,13 +495,14 @@ MENU_SHOW_ALL = {
 
 MENU_INGEST = {
     '__init__': ('init object',    
-                 obj := Ingest(ingest_file_path='/'.join([Constants.INGEST_FILE_PATH_DEFAULT, Constants.INGEST_FILE_NAME_DEFAULT]), 
+                 obj := Ingest(ingest_file_path=Constants.INGEST_FILE_PATH_DEFAULT,
+                                ingest_file_name=Constants.INGEST_FILE_NAME_DEFAULT, 
                                 output_file_path=Constants.FILE_PATH, 
                                 arch_path=Constants.ARCHIVE_FILE_PATH_DEFAULT)
                 ),
     '1': ('Choose file to read',   obj.change_source_file),
     '2': ('Ingest from text file', obj.from_text),
-    '3': ('Ingest from JSON',      lambda: 'Not developed yet'),
+    '3': ('Ingest from JSON',      obj.from_json),
     '4': ('Ingest from XML',       lambda: 'Not developed yet'),
     '0': ('Exit', lambda: 'Exit')
 }
@@ -489,10 +523,10 @@ if __name__ == '__main__':
 
     # create file if not exists
     try:
-        with open(Constants.FILE_PATH, 'r') as file:
+        with open(Constants.FILE_PATH, 'r', encoding='UTF-8') as file:
             pass
     except FileNotFoundError:
-        with open(Constants.FILE_PATH, 'w') as file:
+        with open(Constants.FILE_PATH, 'w', encoding='UTF-8') as file:
             pass
     
     # run app - main menu

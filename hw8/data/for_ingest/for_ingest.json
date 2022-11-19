@@ -1,0 +1,13 @@
+{"Type":"News", "Message":"New Bus routes are opened starting from 10th November, to Ljubliana and Osijek", "City":"Novi Grad"}
+{"Type":"Private Ad", "Message":"Very private ad - not for all, for allowed persons only", "Expiration Date":"2022-12-30"}
+{"Type":"Book", "Title":"New Big Data HandBook", "ISBN":"01928374650192", "Publish Year":"2021"}
+
+{"Type":"Neews", "Message":"New Bus routes are opened starting from 10th November, to Varazdin and Osijek", "City":"Opatia"}
+{"Type":"Private Ad", "Message":"Very private ad - not for all, for allowed persons only" "Expiration Date":"2022-12-30"}
+{"Type":"Book", "Title":"New Big Data HandBook", "Author":"Emil Samuel", "Publish Year":"2021"}
+{"Type":"News", "Message":"Message wihthout кавичка, "City":"Novi Grad"}
+{"Type":"News", BadProperty:"Message wihthout кавичка", "City":"Novi Grad"}
+{"Type":"Book", "Title":"Right Title", "Publish Year":"2022", "ISBN":12345678901234}
+
+
+
