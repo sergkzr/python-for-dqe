@@ -1,0 +1,55 @@
+All you want here 
+    should be skipped
+aaa:ahaha
+
+*********
+WoW WoW : lhlhlhl;kh;length 
+
+
+***News
+Message:  Any text of any length, one line or many lines
+and here is the example of such a Message. Multile text WITHOUT
+symbol 'vertical dots'
+City: Pula
+***Private Ad
+Message: Private ad and Private
+Ad
+Expiration Date: 2022-10-30
+***News
+string, not property-value
+ and continuation - shoud be skipped
+Message: Something interesting here
+***Book
+Title: PySpark - to be or not to be
+ISBN: 1234567890
+Publish Year: 2020F
+***BBook
+Title: PySpark - to be or not to be
+ISBN: 1234567890
+Publish Year: 2020F
+***News
+Message: Waiting for the Pope's visit, in 20 minutes
+City: Umag
+***News
+Messsage: One two three
+City: 
+***Private Ad
+Message:
+Expiration Date: 2000-00-12
+***Book
+Title: PySpark - your turn
+ISBN: 123456789
+Publish Year: 2020
+PPP: Ogogo
+***Something Unknown
+Title: h;hl;h;lkh;lkh;hkl
+Year: 2000
+****News
+Message: Wrong type (four * instead of 3)
+City: LLL
+**News
+Message: abcdefg
+City: Washington
+***
+Name: Serhii
+Surname: Not known
