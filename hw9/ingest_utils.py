@@ -349,6 +349,72 @@ def parse_obj_from_json(json_file):
     return obj_list, skipped_list
 
 
+def parse_obj_from_xml(xml_file):
+    """
+    xml file format:
+    <Messages>
+        <Message Type='News'>
+            <Message>Text of the message </Message>
+            <City>Cityname</City>
+        </Message>
+        <Message Type='Private Ad'>
+            <Message>Text of the message </Message>
+            <Expired Date>2022-12-34</Expired Date>
+        </Message>
+        <Message Type='Book'>
+            <Title>Text of the message </Title>
+            <ISBN>12345678901234</ISBN>
+            <Publish Year>2020</Publish Year>
+        </Message>
+    </Messages>
+    Xml, which cannot be parced - skipped entirely
+    Xml elements with not appropriate format (No Type tag)- skipped 
+
+    Returns:
+       object_dict_list
+       skipped_list
+   """
+
+    obj_list = []
+    skipped_list = []
+
+    print('Under development...')
+
+    # with open(xml_file, encoding='UTF-8', newline= '') as filexml:
+        
+        # for json_str in  filejson:
+        #     json_str = json_str.strip()
+        #     print(json_str)
+
+        #     if json_str == '':
+        #         continue
+
+        #     try:
+        #         obj_dict_ = json.loads(json_str)
+        #     except:
+        #         print('invalid json:', json_str)
+        #         skipped_list.append(json_str+'\n')
+        #         continue
+
+            # cast to template: {'__ObjectType':objtypestr, 'prop1': ['str1\n', 'str2\n', ...], 'prop1': [...],...}
+            # obj_dict = dict()
+            # for k_, v_ in obj_dict_.items():
+
+            #     if k_ == 'Type':
+            #         k = '__ObjectType'
+            #         v = v_
+            #     else:
+            #         k = k_
+            #         v = [str(v_) + '\n']
+                
+            #     obj_dict |= {k: v}
+
+            # print(obj_dict)
+            # obj_list.append(obj_dict)  
+
+    return obj_list, skipped_list
+
+
 def manage_files(source_file_path, arch_path, obj_list, skipped):
 
     dirname = os.path.dirname(source_file_path)

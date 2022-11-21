@@ -433,6 +433,31 @@ class Ingest:
 
         return 'Wait'
 
+    def from_xml(self):
+
+        xml_file_path = os.path.join(self.ing_file_path, Constants.INGEST_FILE_NAME_DEFAULT+'.xml')
+        # check if file does exist
+        try:
+            with open(xml_file_path, encoding='UTF-8') as file:
+                pass
+        except:
+            return f'File {xml_file_path} does not exist.'
+       
+        print(f'From file: {xml_file_path}')
+
+        obj_dict_list, skipped_list = Ing.parse_obj_from_xml(xml_file_path)
+
+        allowed_dict_list, skipped_lines_3 = Ing.allowed_obj_dicts_from_obj_dicts(obj_dict_list, message_types, message_ingest_prop)
+
+        objects_list, skipped_lines_4 = Ing.parse_objects_from_dict_list(allowed_dict_list, message_types, message_ingest_to_objprop_map)
+
+        skipped = ''.join(skipped_list + skipped_lines_3 + skipped_lines_4)
+
+        Ing.manage_objects(objects_list, skipped, xml_file_path, Constants.ARCHIVE_FILE_PATH_DEFAULT)
+
+        return 'Wait'
+        
+
 #### statistics making - reading/showing
 
 def show_stats():
