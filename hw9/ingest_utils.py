@@ -379,6 +379,7 @@ def parse_obj_from_xml(xml_file_path):
     try:
         tree = ET.parse(xml_file_path)
     except (FileNotFoundError, ET.ParseError):
+        print('Ingest xml file cannot be parsed')
         return [], []
 
     trtable = ''.maketrans("-_.", "   ")
