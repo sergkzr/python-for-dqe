@@ -279,7 +279,7 @@ class Book_message(Message):
             f"Book, {self.published}\n"
             f"Title: {self.msg}\n"
             f"ISBN: {self.isbn}\n"
-            f"Publish_Year: {self.publish_year}\n"
+            f"Publish Year: {self.publish_year}\n"
             f"---------->\n")
 
 
@@ -370,7 +370,7 @@ class Ingest:
             new_name = input("New ingest file name (without extention, Exit to cancel): ")
             if new_name == 'Exit': 
                 self.ing_file_name = curr_name
-                return f'File name was not changed; {curr_name}'
+                return f'File name was not changed: {curr_name}'
             # check if any file with the name mentioned exists
             file_list = os.listdir(self.ing_file_path)
             for filedir in file_list:
@@ -456,7 +456,7 @@ class Ingest:
         Ing.manage_objects(objects_list, skipped, xml_file_path, Constants.ARCHIVE_FILE_PATH_DEFAULT)
 
         return 'Wait'
-        
+
 
 #### statistics making - reading/showing
 
@@ -528,7 +528,7 @@ MENU_INGEST = {
     '1': ('Choose file to read',   obj.change_source_file),
     '2': ('Ingest from text file', obj.from_text),
     '3': ('Ingest from JSON',      obj.from_json),
-    '4': ('Ingest from XML',       lambda: 'Not developed yet'),
+    '4': ('Ingest from XML',       obj.from_xml),
     '0': ('Exit', lambda: 'Exit')
 }
 

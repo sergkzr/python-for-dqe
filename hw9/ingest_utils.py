@@ -3,6 +3,7 @@ import string as st
 import datetime as dt
 import os
 import json
+import xml.etree.ElementTree as ET
 
 
 def isobjtypename(s:str)->bool:
@@ -318,7 +319,7 @@ def parse_obj_from_json(json_file):
         
         for json_str in  filejson:
             json_str = json_str.strip()
-            print(json_str)
+            # print(json_str)
 
             if json_str == '':
                 continue
@@ -326,7 +327,7 @@ def parse_obj_from_json(json_file):
             try:
                 obj_dict_ = json.loads(json_str)
             except:
-                print('invalid json:', json_str)
+                # print('invalid json:', json_str)
                 skipped_list.append(json_str+'\n')
                 continue
 
@@ -343,13 +344,13 @@ def parse_obj_from_json(json_file):
                 
                 obj_dict |= {k: v}
 
-            print(obj_dict)
+            # print(obj_dict)
             obj_list.append(obj_dict)  
 
     return obj_list, skipped_list
 
 
-def parse_obj_from_xml(xml_file):
+def parse_obj_from_xml(xml_file_path):
     """
     xml file format:
     <Messages>
@@ -368,51 +369,56 @@ def parse_obj_from_xml(xml_file):
         </Message>
     </Messages>
     Xml, which cannot be parced - skipped entirely
-    Xml elements with not appropriate format (No Type tag)- skipped 
+    Xml elements with not appropriate format (No Type tag, e.g.)- skipped 
 
     Returns:
        object_dict_list
        skipped_list
-   """
+    """
 
-    obj_list = []
+    try:
+        tree = ET.parse(xml_file_path)
+    except (FileNotFoundError, ET.ParseError):
+        return [], []
+
+    trtable = ''.maketrans("-_.", "   ")
+
+    obj_dict_list = []
     skipped_list = []
+    root = tree.getroot()
 
-    print('Under development...')
+    for element in root:
 
-    # with open(xml_file, encoding='UTF-8', newline= '') as filexml:
+        # print(element.tag, element.attrib.get('Type', 'UnKnown'))
+
+        if element.tag != 'Message':
+            # skip entire element/child
+            skipped_elem = ET.tostring(element, encoding='unicode')
+            # print(type(skipped_elem), skipped_elem)
+            skipped_list.append(skipped_elem)
+            continue
+
+        if (obj_type_val:=element.attrib.get('Type', 'UnKnown')) == 'UnKnown':
+            # there is no attribute / message type -- skip entire element/child
+            skipped_elem = ET.tostring(element, encoding='unicode')
+            # print(type(skipped_elem), skipped_elem)
+            skipped_list.append(skipped_elem)
+            continue
+
+        obj_dict = {'__ObjectType': obj_type_val}
         
-        # for json_str in  filejson:
-        #     json_str = json_str.strip()
-        #     print(json_str)
+        for child in element:
+            
+            key = child.tag.translate(trtable).lower().title()
+            
+            value_list = child.text.split('\n')             # make list of strings
+            value = [ line + '\n' for line in value_list ]  # restore line end symbols at the end of string
+            
+            obj_dict |= {key: value}
+            
+        obj_dict_list.append(obj_dict)          
 
-        #     if json_str == '':
-        #         continue
-
-        #     try:
-        #         obj_dict_ = json.loads(json_str)
-        #     except:
-        #         print('invalid json:', json_str)
-        #         skipped_list.append(json_str+'\n')
-        #         continue
-
-            # cast to template: {'__ObjectType':objtypestr, 'prop1': ['str1\n', 'str2\n', ...], 'prop1': [...],...}
-            # obj_dict = dict()
-            # for k_, v_ in obj_dict_.items():
-
-            #     if k_ == 'Type':
-            #         k = '__ObjectType'
-            #         v = v_
-            #     else:
-            #         k = k_
-            #         v = [str(v_) + '\n']
-                
-            #     obj_dict |= {k: v}
-
-            # print(obj_dict)
-            # obj_list.append(obj_dict)  
-
-    return obj_list, skipped_list
+    return obj_dict_list, skipped_list
 
 
 def manage_files(source_file_path, arch_path, obj_list, skipped):
@@ -423,7 +429,8 @@ def manage_files(source_file_path, arch_path, obj_list, skipped):
     
     dtnowstr = dt.datetime.now().strftime("%Y%m%d-%H-%M-%S")
     
-    new_file_name = ''.join([name, '_arc', dtnowstr, ext])
+    new_ext = ''.join([ext, '_'])
+    new_file_name = ''.join([name, '_arc', dtnowstr, new_ext])
     new_file_path = os.path.join(arch_path, new_file_name)
     
     # copy source file to archive
@@ -439,7 +446,7 @@ def manage_files(source_file_path, arch_path, obj_list, skipped):
 
     # save skipped lines to archive file
 
-    arch_err_file_name = ''.join([name, '_err', dtnowstr, ext])
+    arch_err_file_name = ''.join([name, '_err', dtnowstr, new_ext])
     arch_err_file_path = os.path.join(arch_path, arch_err_file_name)
     
     with open(arch_err_file_path, 'w', encoding='UTF-8') as skipped_file:
@@ -452,7 +459,7 @@ def manage_files(source_file_path, arch_path, obj_list, skipped):
     
     # save ingested objects to archive
 
-    arch_obj_file_name = ''.join([name, '_obj', dtnowstr, ext])
+    arch_obj_file_name = ''.join([name, '_obj', dtnowstr, new_ext])
     arch_obj_file_path = os.path.join(arch_path, arch_obj_file_name)
     
     with open(arch_obj_file_path, 'w', encoding='UTF-8') as obj_file:

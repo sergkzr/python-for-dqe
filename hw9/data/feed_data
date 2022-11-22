@@ -160,3 +160,26 @@ News, 2022-11-19 21:03:32.412615
 Text: Statistics updated  to take into account cyrilic letters, ukrainian and russian, like іиыїъ
 City: Пула/Пола
 ---------->
+<----------
+News, 2022-11-22 01:17:03.320360
+Text: News from XML, short message about how to live in Austria
+City: Klagenfurt
+---------->
+<----------
+Private Ad, 2022-11-22 01:17:03.322375
+Text: The first Private Ad from XML file, sell my own computer table, not expencive
+Expiration Date: 2022-12-31
+Days Left: 39 days, 0:00:00
+---------->
+<----------
+Book, 2022-11-22 01:17:03.324373
+Title: Digital universe and digital lifestyle
+ISBN: 12345678901234
+Publish_Year: 2020
+---------->
+<----------
+Book, 2022-11-22 01:17:03.326418
+Title: Digital universe and digital lifestyle
+ISBN: 12345678901234
+Publish_Year: 2020
+---------->

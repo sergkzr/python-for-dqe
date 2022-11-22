@@ -1,0 +1,19 @@
+<calendar_item Type="Book">
+        <date>2020-12-13</date>
+        <time>12:30</time>
+        <text>Call mom</text>
+    </calendar_item>
+    <Message>
+        <Title>Digital universe and digital lifestyle - дубль</Title>
+        <ISBN>12345678901234</ISBN>
+        <Publish-Year>2020</Publish-Year>
+    </Message>
+***Neews
+Message:Digital universe and digital lifestyle
+City:12345678901234
+***Private Ad
+Message:The second Private Ad from XML file, wrong (additional property) sell my own computer table, 
+        not expensive
+        і кілька слів українською
+Expiration Date:2023-01-31
+Author:Mickle Jackson
