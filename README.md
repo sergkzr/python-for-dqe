@@ -51,6 +51,23 @@ hw8/
        feed_data
        lettercount
        wordcount
+hw8/
+   app.py*
+   utilities.py
+   ingest_util.py*
+   statistics_csv.py
+   data/
+       for_ingest/
+           for_ingest.txt
+           for_ingest.json
+           for_ingest.xml*
+       archive/
+           for_ingest_(arc|obj|err)<date>.txt_
+           for_ingest_(arc|obj|err)<date>.json_
+           for_ingest_(arc|obj|err)<date>.xml_*
+       feed_data
+       lettercount
+       wordcount
 ```
 
        
