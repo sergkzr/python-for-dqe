@@ -1,0 +1,35 @@
+All you want here 
+    should be skipped
+aaa:ahaha
+
+*********
+WoW WoW : lhlhlhl;kh;length 
+
+
+string, not property-value
+ and continuation - shoud be skipped
+***News
+__Skipped:string, not property-value
+ and continuation - shoud be skipped
+Message: Something interesting here
+***Bbook
+__Skipped:Title: PySpark - to be or not to be
+Isbn: 1234567890
+Publish Year: 2020F
+***News
+__Skipped:Messsage: One two three
+City: 
+***Book
+__Skipped:Title: PySpark - your turn
+Isbn: 123456789
+Publish Year: 2020
+Ppp: Ogogo
+***Something Unknown
+__Skipped:Title: h;hl;h;lkh;lkh;hkl
+Year: 2000
+****News
+Message: abcdefg
+City: Washington
+***
+__Skipped:Name: Serhii
+Surname: Not known

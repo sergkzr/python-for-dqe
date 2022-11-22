@@ -1,0 +1,41 @@
+<Messages>
+    <Message Type="News">
+        <Message>News from XML, short message about how to live in Austria</Message>
+        <City>Klagenfurt</City>
+    </Message>
+    <Message Type="Private Ad">
+        <Message>The first Private Ad from XML file, sell my own computer table, not expencive</Message>
+        <Expiration-Date>2022-12-31</Expiration-Date>
+    </Message>
+    <Message Type="Book">
+        <Title>Digital universe and digital lifestyle</Title>
+        <ISBN>12345678901234</ISBN>
+        <Publish-Year>2020</Publish-Year>
+    </Message>
+    <Message Type="Neews">
+        <Message>Digital universe and digital lifestyle</Message>
+        <City>12345678901234</City>
+    </Message>
+    <Message Type="Private Ad">
+        <Message>The second Private Ad from XML file, wrong (additional property) sell my own computer table, 
+        not expensive
+        і кілька слів українською</Message>
+        <Expiration-Date>2023-01-31</Expiration-Date>
+        <Author>Mickle Jackson</Author>
+    </Message>
+    <Message Type="Book">
+        <Title>Digital universe and digital lifestyle</Title>
+        <ISBN>12345678901234</ISBN>
+        <Publish_Year>2020</Publish_Year>
+    </Message>
+    <calendar_item Type="Book">
+        <date>2020-12-13</date>
+        <time>12:30</time>
+        <text>Call mom</text>
+    </calendar_item>
+    <Message>
+        <Title>Digital universe and digital lifestyle - дубль</Title>
+        <ISBN>12345678901234</ISBN>
+        <Publish-Year>2020</Publish-Year>
+    </Message>
+</Messages>
