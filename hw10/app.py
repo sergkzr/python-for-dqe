@@ -1,4 +1,4 @@
-# HW7: files and modules
+# HW10: files and modules
 
 import datetime as dt
 import os
@@ -8,6 +8,7 @@ import csv
 import utilities as U
 import ingest_utils as Ing
 import statistics_csv as ST
+import db_utilities as DB
 
 class Constants:
 
@@ -166,18 +167,29 @@ class Message:
     def put_message(self):
 
         self.published = dt.datetime.utcnow()
-       
         obj_str = self.make_obj_string()
         
         with open(Constants.FILE_PATH, 'a', encoding='UTF-8') as file:
             file.write(obj_str)
 
-        make_stats()
+        make_stats(mode='file')
 
         return obj_str
 
     def show(self, oneline=False):
         print(self.make_obj_string(oneline))
+
+    def put_message_db(self):
+
+        self.published = dt.datetime.utcnow()
+        obj_insert_sql = self.make_obj_insert_sql()
+
+        objtype, objpk = DB.put_message(obj_insert_sql)
+        DB.put_index(objtype, objpk, self.published)
+
+        make_stats(mode='db')
+
+
        
 
 class News_message(Message):
@@ -205,6 +217,10 @@ class News_message(Message):
             f"Text: {self.msg}\n"
             f"City: {self.city}\n"
             f"---------->\n")
+
+    def make_obj_insert_sql(self):
+        objtype = 'News'
+        pass
 
 
 class Private_ad_message(Message):
@@ -251,6 +267,10 @@ class Private_ad_message(Message):
             f"Days Left: {self.__expire_days()}\n"
             f"---------->\n")
 
+    def make_obj_insert_sql(self):
+        objtype = 'Private Ad'
+        pass
+
 
 class Book_message(Message):
 
@@ -281,6 +301,10 @@ class Book_message(Message):
             f"ISBN: {self.isbn}\n"
             f"Publish Year: {self.publish_year}\n"
             f"---------->\n")
+
+    def make_obj_insert_sql(self):
+        objtype = 'Book'
+        pass
 
 
 # ## MESSAGE OBJECTS METADATA ####################################
@@ -486,13 +510,20 @@ def show_stats():
     return 'Wait'
 
 
-def make_stats():
+def make_stats(mode='file'):
 
-    fdata = Constants.FILE_PATH
     fwords = Constants.FILE_STATS_WORDCOUNT
     fletters = Constants.FILE_STATS_SYMBCOUNT
 
-    txt = ST.get_text_from_feed_data(fdata)
+    if mode == 'file':
+
+        fdata = Constants.FILE_PATH
+        txt = ST.get_text_from_feed_data(fdata)
+
+    elif mode == 'db':
+        
+        txt = DB.get_text_for_stats()
+    
     
     # make words statistics
     word_count = ST.word_count(txt.lower())
