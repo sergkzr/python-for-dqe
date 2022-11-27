@@ -1,0 +1,10 @@
+{"Type":"Private Ad", "Message":"Very private ad - not for all, for allowed persons only" "Expiration Date":"2022-12-30"}
+{"Type":"News", "Message":"Message wihthout кавичка, "City":"Novi Grad"}
+{"Type":"News", BadProperty:"Message wihthout кавичка", "City":"Novi Grad"}
+***Neews
+Message:New Bus routes are opened starting from 10th November, to Varazdin and Osijek
+City:Opatia
+***Book
+Title:New Big Data HandBook
+Author:Emil Samuel
+Publish Year:2021

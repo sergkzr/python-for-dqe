@@ -186,16 +186,7 @@ class Message:
         return obj_str
 
 
-    # def put_message_db(self):
-
-    #     self.published = dt.datetime.utcnow()
-    #     objtype, obj_insert_sql = self.make_obj_insert_sql()
-
-    #     obj_ind, obj_pk = db.put_message(objtype, obj_insert_sql, self.published)
-
-    #     obj = db.get_object_byind()
-
-    #     return obj.make_obj_string(oneline=True)
+    # see in each ancestor object: def put_message_db(self): ...
 
 
     def put_message(self):
@@ -257,9 +248,9 @@ class News_message(Message):
             # cannot get previously put object 
             return 'Cannot get News created from Db.'
 
-        print(obj_dict)
-        
+        print('<<\n', obj_dict)       
         obj_json_str = json.dumps(obj_dict)
+        print(obj_json_str, '\n>>')
 
         return obj_json_str
 
@@ -272,7 +263,7 @@ class Private_ad_message(Message):
         self.expiration_date = expiration_date
 
 
-    def __expire_days(self):
+    def expire_days(self):
 
         now_date = dt.date.today()
 
@@ -302,28 +293,39 @@ class Private_ad_message(Message):
 
     def make_obj_string(self, oneline=False):
         if oneline:
-            return f'<Private Ad: {self.published}, Expiration Date: {self.expiration_date}, Days Left: {self.__expire_days()}, Txt: {self.msg[:20]}...>'
+            return f'<Private Ad: {self.published}, Expiration Date: {self.expiration_date}, Days Left: {self.expire_days()}, Txt: {self.msg[:20]}...>'
         else:
             return (
             f"<----------\n"
             f"Private Ad, {self.published}\n"
             f"Text: {self.msg}\n"
             f"Expiration Date: {self.expiration_date}\n"
-            f"Days Left: {self.__expire_days()}\n"
+            f"Days Left: {self.expire_days()}\n"
             f"---------->\n")
 
 
     def put_message_db(self):
 
-        return '{"__ObjectType": "Dummy"}'
+        self.published = dt.datetime.utcnow()
 
+        obj_ind_id = db.put_privatead(self)
+        if obj_ind_id == -1:
+            # cannot put news object to DB
+            return 'Cannot put News to Db.'
 
-    # def make_obj_insert_sql(self):
-    #     objtype = 'Private Ad'
-    #     # TODO: expire_days - add to table definition and to query
-    #     prad_insert_sql = f'insert into privatead (message, expiration_date, expire_days) values("{self.msg}", "{self.expiration_date}", "{self.__expire_days()}")'
-    #     return objtype, prad_insert_sql
-        
+        obj_dict, time_created, ind_id = db.get_privatead(obj_ind_id)
+        if not obj_dict:
+            # cannot get previously put object 
+            return 'Cannot get News created from Db.'
+
+        obj_dict |= { "Days Left": f"{self.expire_days()}" }
+
+        print('<<\n', obj_dict)       
+        obj_json_str = json.dumps(obj_dict)
+        print(obj_json_str, '\n>>')
+
+        return obj_json_str
+
 
 
 class Book_message(Message):
@@ -358,17 +360,25 @@ class Book_message(Message):
             f"Publish Year: {self.publish_year}\n"
             f"---------->\n")
 
-
-    # def make_obj_insert_sql(self):
-    #     objtype = 'Book'
-    #     # TODO: expire_days - add to table definition and to query
-    #     book_insert_sql = f'insert into book (title, isbn, publish_year) values("{self.msg}", "{self.isbn}", "{self.publish_year}")'
-    #     return objtype, book_insert_sql
-
-
     def put_message_db(self):
 
-        return '{"__ObjectType": "Dummy"}'
+        self.published = dt.datetime.utcnow()
+
+        obj_ind_id = db.put_book(self)
+        if obj_ind_id == -1:
+            # cannot put news object to DB
+            return 'Cannot put News to Db.'
+
+        obj_dict, time_created, ind_id = db.get_book(obj_ind_id)
+        if not obj_dict:
+            # cannot get previously put object 
+            return 'Cannot get News created from Db.'
+
+        print('<<\n', obj_dict)       
+        obj_json_str = json.dumps(obj_dict)
+        print(obj_json_str, '\n>>')
+
+        return obj_json_str
 
 
 
@@ -578,7 +588,7 @@ def show_stats():
     return 'Wait'
 
 
-def make_stats(mode='file'):
+def make_stats(mode='db'):
 
     fwords = Constants.FILE_STATS_WORDCOUNT
     fletters = Constants.FILE_STATS_SYMBCOUNT
@@ -591,6 +601,11 @@ def make_stats(mode='file'):
     elif mode == 'db':
         
         txt = db.get_text_for_stats()
+
+    else:
+
+        print(f'[make_stats]: Uknown mode: {mode}')
+        return
     
     
     # make words statistics
