@@ -3,6 +3,7 @@
 import datetime as dt
 import os
 import csv
+import json
 # from time import sleep
 
 import utilities as U
@@ -10,9 +11,12 @@ import ingest_utils as Ing
 import statistics_csv as ST
 import db_utilities as DB
 
+
+
 class Constants:
 
     FILE_PATH = './data/feed_data'   # like internal DB file path
+    DB_FILE_PATH = './data/feed_data.db'
     FILE_STATS_WORDCOUNT = './data/wordcount'
     FILE_STATS_SYMBCOUNT = './data/lettercount'
 
@@ -24,6 +28,7 @@ class Constants:
     ARCHIVE_FILE_PATH_DEFAULT = './data/archive'
 
 
+
 class Empty_object:
     def __init__(self):
         self.message = 'Empty object'
@@ -32,6 +37,7 @@ class Empty_object:
         print(self.message)
 
 empty_object = Empty_object()
+
 
 
 class Messages:
@@ -90,6 +96,7 @@ class Messages:
 
         return None
 
+
     def show_first_page(self):
 
         self.__make_object_index()
@@ -102,6 +109,7 @@ class Messages:
         self.__show_page(page, page_objects) 
 
         return 'Wait'
+
     
     def show_last_page(self):
 
@@ -116,6 +124,7 @@ class Messages:
         self.__show_page(page, page_length)
 
         return 'Wait'
+
 
     def show_next_page(self):
        
@@ -136,6 +145,7 @@ class Messages:
             self.__show_page(page, page_objects)
 
         return 'Wait'
+
 
     def show_prev_page(self):
 
@@ -164,7 +174,8 @@ class Message:
         self.msg = msg
         self.published = '0000-00-00'
 
-    def put_message(self):
+
+    def put_message_file(self):
 
         self.published = dt.datetime.utcnow()
         obj_str = self.make_obj_string()
@@ -172,30 +183,42 @@ class Message:
         with open(Constants.FILE_PATH, 'a', encoding='UTF-8') as file:
             file.write(obj_str)
 
-        make_stats(mode='file')
-
         return obj_str
 
+
+    # def put_message_db(self):
+
+    #     self.published = dt.datetime.utcnow()
+    #     objtype, obj_insert_sql = self.make_obj_insert_sql()
+
+    #     obj_ind, obj_pk = db.put_message(objtype, obj_insert_sql, self.published)
+
+    #     obj = db.get_object_byind()
+
+    #     return obj.make_obj_string(oneline=True)
+
+
+    def put_message(self):
+
+        obj_oneline_str = self.put_message_db()
+        obj_str = self.put_message_file()
+
+        # make_stats(mode='file')
+        make_stats(mode='db')
+
+        return obj_oneline_str, obj_str
+
+    
     def show(self, oneline=False):
         print(self.make_obj_string(oneline))
 
-    def put_message_db(self):
 
-        self.published = dt.datetime.utcnow()
-        obj_insert_sql = self.make_obj_insert_sql()
-
-        objtype, objpk = DB.put_message(obj_insert_sql)
-        DB.put_index(objtype, objpk, self.published)
-
-        make_stats(mode='db')
-
-
-       
 
 class News_message(Message):
     def __init__(self, msg='NoMessage', city='NoCity'):
         super().__init__(msg)
         self.city = city
+
         
     def make(self):
         # input data check could be added
@@ -206,6 +229,7 @@ class News_message(Message):
         print(obj_str)
         
         return 'Wait'
+
 
     def make_obj_string(self, oneline=False):
         if oneline:
@@ -218,9 +242,27 @@ class News_message(Message):
             f"City: {self.city}\n"
             f"---------->\n")
 
-    def make_obj_insert_sql(self):
-        objtype = 'News'
-        pass
+
+    def put_message_db(self):
+
+        self.published = dt.datetime.utcnow()
+
+        obj_ind_id = db.put_news(self)
+        if obj_ind_id == -1:
+            # cannot put news object to DB
+            return 'Cannot put News to Db.'
+
+        obj_dict, time_created, ind_id = db.get_news(obj_ind_id)
+        if not obj_dict:
+            # cannot get previously put object 
+            return 'Cannot get News created from Db.'
+
+        print(obj_dict)
+        
+        obj_json_str = json.dumps(obj_dict)
+
+        return obj_json_str
+
 
 
 class Private_ad_message(Message):
@@ -228,6 +270,7 @@ class Private_ad_message(Message):
     def __init__(self, ad='NoAd', expiration_date='NoDate'):
         super().__init__(ad)
         self.expiration_date = expiration_date
+
 
     def __expire_days(self):
 
@@ -245,6 +288,7 @@ class Private_ad_message(Message):
 
         return f'{exp_days}'
 
+
     def make(self):
         # input data check could be added
         self.msg = input('New Private Ad: ')
@@ -254,6 +298,7 @@ class Private_ad_message(Message):
         print(obj_str)
 
         return 'Wait'
+
 
     def make_obj_string(self, oneline=False):
         if oneline:
@@ -267,9 +312,18 @@ class Private_ad_message(Message):
             f"Days Left: {self.__expire_days()}\n"
             f"---------->\n")
 
-    def make_obj_insert_sql(self):
-        objtype = 'Private Ad'
-        pass
+
+    def put_message_db(self):
+
+        return '{"__ObjectType": "Dummy"}'
+
+
+    # def make_obj_insert_sql(self):
+    #     objtype = 'Private Ad'
+    #     # TODO: expire_days - add to table definition and to query
+    #     prad_insert_sql = f'insert into privatead (message, expiration_date, expire_days) values("{self.msg}", "{self.expiration_date}", "{self.__expire_days()}")'
+    #     return objtype, prad_insert_sql
+        
 
 
 class Book_message(Message):
@@ -278,6 +332,7 @@ class Book_message(Message):
         super().__init__(book_name)
         self.isbn = isbn
         self.publish_year = publish_year
+
 
     def make(self):
         # input data check could be added
@@ -289,6 +344,7 @@ class Book_message(Message):
         print(obj_str)
 
         return 'Wait'
+
 
     def make_obj_string(self, oneline=False):
         if oneline:
@@ -302,9 +358,18 @@ class Book_message(Message):
             f"Publish Year: {self.publish_year}\n"
             f"---------->\n")
 
-    def make_obj_insert_sql(self):
-        objtype = 'Book'
-        pass
+
+    # def make_obj_insert_sql(self):
+    #     objtype = 'Book'
+    #     # TODO: expire_days - add to table definition and to query
+    #     book_insert_sql = f'insert into book (title, isbn, publish_year) values("{self.msg}", "{self.isbn}", "{self.publish_year}")'
+    #     return objtype, book_insert_sql
+
+
+    def put_message_db(self):
+
+        return '{"__ObjectType": "Dummy"}'
+
 
 
 # ## MESSAGE OBJECTS METADATA ####################################
@@ -381,6 +446,7 @@ class Ingest:
         self.ing_file_name = ingest_file_name
         self.out_file_path = output_file_path
         self.arch_file_path = arch_path
+
     
     def change_source_file(self):
         # change the NAME of ingest file in default ingest directory, 
@@ -457,6 +523,7 @@ class Ingest:
 
         return 'Wait'
 
+
     def from_xml(self):
 
         xml_file_path = os.path.join(self.ing_file_path, Constants.INGEST_FILE_NAME_DEFAULT+'.xml')
@@ -480,6 +547,7 @@ class Ingest:
         Ing.manage_objects(objects_list, skipped, xml_file_path, Constants.ARCHIVE_FILE_PATH_DEFAULT)
 
         return 'Wait'
+
 
 
 #### statistics making - reading/showing
@@ -522,7 +590,7 @@ def make_stats(mode='file'):
 
     elif mode == 'db':
         
-        txt = DB.get_text_for_stats()
+        txt = db.get_text_for_stats()
     
     
     # make words statistics
@@ -584,9 +652,13 @@ if __name__ == '__main__':
     except FileNotFoundError:
         with open(Constants.FILE_PATH, 'w', encoding='UTF-8') as file:
             pass
+
+    db = DB.DB(Constants.DB_FILE_PATH)
     
     # run app - main menu
     
     menu_res = U.Menu(MENU, 'Main menu').run()
     
     print(menu_res)
+
+    db.dbclose()
